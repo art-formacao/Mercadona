@@ -36,5 +36,13 @@
     ".PNG",
     ".WEBP",
     ".GIF"
-  ]
+  ],
+  "columnsBySheet": {
+    "Póvoa de Varzim": {
+      "notes": "",
+      "contact": "H",
+      "video1": "K",
+      "video2": "L"
+    }
+  }
 }

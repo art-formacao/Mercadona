@@ -363,6 +363,11 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
 /* Ícone Google Maps nos botões de navegação do perfil */
 .navigation-modal-card .profile-maps-icon{width:30px;height:30px;flex:0 0 30px;border-radius:7px}
 .navigation-modal-card .maps{display:flex;align-items:center;justify-content:center;gap:10px}
+
+/* As notas da coluna H são mostradas dentro da carta Notas importantes */
+#importantNoteText{white-space:pre-line;overflow-wrap:anywhere}
+#importantNoteText.has-store-note{font-size:14px;line-height:1.65;color:#5e4a2e;margin-top:9px}
+
 </style>
 
 </head>
@@ -538,26 +543,10 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
                         <div>
                             <div class="panel-kicker">INFORMAÇÃO A DESTACAR</div>
                             <h2>Notas importantes</h2>
-                            <p>Os alertas e cuidados específicos desta loja aparecerão nesta área.</p>
+                            <p id="importantNoteText">Os alertas e cuidados específicos desta loja aparecerão nesta área.</p>
                         </div>
                     </div>
 
-                    <div class="notes-box">
-                        <div class="notes-box-heading">
-                            <div>
-                                <h3>Pontos de atenção</h3>
-                                <p>Notas operacionais da loja</p>
-                            </div>
-                            <span class="notes-badge">NOTAS</span>
-                        </div>
-                        <div id="storeNotes" class="store-notes-list">
-                            <div class="notes-empty-state">
-                                <span class="notes-empty-icon">≡</span>
-                                <strong>As notas serão apresentadas aqui</strong>
-                                <span>Esta área será preenchida quando ligarmos as pastas de observações ao manifesto.</span>
-                            </div>
-                        </div>
-                    </div>
                 </section>
             </section>
         </main>
@@ -1362,33 +1351,12 @@ function getVimeoEmbed(value) {
 }
 
 function renderStoreNotes(notes) {
-    const container = document.getElementById('storeNotes');
-    container.replaceChildren();
-    const lines = String(notes || '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    const noteText = document.getElementById('importantNoteText');
+    if (!noteText) return;
 
-    if (!lines.length) {
-        const empty = document.createElement('div');
-        empty.className = 'notes-empty-state';
-        const icon = document.createElement('span');
-        icon.className = 'notes-empty-icon';
-        icon.textContent = '≡';
-        const title = document.createElement('strong');
-        title.textContent = 'Sem notas registadas';
-        const info = document.createElement('span');
-        info.textContent = 'Não existem observações preenchidas na coluna H desta loja.';
-        empty.append(icon, title, info);
-        container.appendChild(empty);
-        return;
-    }
-
-    const list = document.createElement('ul');
-    list.className = 'store-notes-items';
-    lines.forEach(line => {
-        const item = document.createElement('li');
-        item.textContent = line.replace(/^[-•]\s*/, '');
-        list.appendChild(item);
-    });
-    container.appendChild(list);
+    const text = String(notes || '').trim();
+    noteText.textContent = text || 'Os alertas e cuidados específicos desta loja aparecerão nesta área.';
+    noteText.classList.toggle('has-store-note', Boolean(text));
 }
 
 function extractDestinationFromLink(rawLink) {
