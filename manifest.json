@@ -1,0 +1,24 @@
+{
+  "workbook": "Dados.xlsx",
+  "sheets": {
+    "Almeirim": "Almeirim",
+    "Póvoa de Varzim": "Póvoa de Varzim"
+  },
+  "firstDataRow": 2,
+  "columns": {
+    "number": "A",
+    "name": "B",
+    "locality": "C",
+    "address": "D",
+    "coordinates": "E",
+    "waitingLink": "F",
+    "storeLink": "G",
+    "notes": "H",
+    "contact": "I",
+    "photo1": "J",
+    "photo2": "K",
+    "video1": "L",
+    "video2": "M"
+  },
+  "assetsBasePath": ""
+}
