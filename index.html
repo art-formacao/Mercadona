@@ -571,8 +571,8 @@ const DEFAULT_CONFIG = {
     workbook: "Dados.xlsx",
     // O nome à esquerda é o nome apresentado na aplicação; à direita está o nome exato da folha no Excel.
     sheets: {
-        "Almeirim": "Almerim",
-        "Póvoa de Varzim": "Póvoa do Varzim"
+        "Almeirim": "Almeirim",
+        "Póvoa de Varzim": "Póvoa de Varzim"
     },
     firstDataRow: 2,
     columns: {
@@ -594,17 +594,6 @@ const DEFAULT_CONFIG = {
     photoFolder: "Fotos",
     photoPattern: "{number}.{index}",
     photoExtensions: ["", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif", ".JPG", ".JPEG", ".PNG", ".WEBP", ".GIF"],
-    // A folha Póvoa do Varzim atualmente não tem coluna Notas; os campos seguintes estão uma coluna à esquerda.
-    columnsBySheet: {
-        "Póvoa de Varzim": {
-            notes: "",
-            contact: "H",
-            photo1: "I",
-            photo2: "J",
-            video1: "J",
-            video2: "K"
-        }
-    },
     assetsBasePath: ""
 };
 
@@ -891,8 +880,18 @@ function looksLikeHeader(number, name) {
            (b.includes('nome') || b.includes('loja'));
 }
 
+function normalizeSheetName(value) {
+    return normalizeKey(value)
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 function findWorksheetName(workbook, wantedName) {
-    return workbook.SheetNames.find(name => normalizeKey(name) === normalizeKey(wantedName));
+    const names = Array.isArray(workbook && workbook.SheetNames)
+        ? workbook.SheetNames
+        : Object.keys((workbook && workbook.Sheets) || {});
+    const wanted = normalizeSheetName(wantedName);
+    return names.find(name => normalizeSheetName(name) === wanted) || '';
 }
 
 
@@ -1071,8 +1070,9 @@ async function parseWorkbookArrayBuffer(arrayBuffer, fileName) {
     }
 
     if (missingSheets.length) {
+        const actualNames = Array.isArray(workbook.SheetNames) ? workbook.SheetNames.join(', ') : 'não disponíveis';
         throw new Error('Não encontrei as folhas configuradas: ' + missingSheets.join(', ') +
-            '. No Excel atual, os nomes são "Almerim" e "Póvoa do Varzim".');
+            '. Folhas encontradas no ficheiro: ' + actualNames + '. Confirme os nomes no Excel e no manifest.json.');
     }
     if (!parsedStores.length) {
         throw new Error('Não encontrei lojas nas folhas configuradas. Confirme se os dados começam na linha 2 e se as colunas A, B e C têm número, nome e localidade.');

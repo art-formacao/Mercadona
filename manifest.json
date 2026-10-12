@@ -1,8 +1,8 @@
 {
   "workbook": "Dados.xlsx",
   "sheets": {
-    "Almeirim": "Almerim",
-    "Póvoa de Varzim": "Póvoa do Varzim"
+    "Almeirim": "Almeirim",
+    "Póvoa de Varzim": "Póvoa de Varzim"
   },
   "firstDataRow": 2,
   "columns": {
@@ -19,16 +19,6 @@
     "photo2": "K",
     "video1": "J",
     "video2": "K"
-  },
-  "columnsBySheet": {
-    "Póvoa de Varzim": {
-      "notes": "",
-      "contact": "H",
-      "photo1": "I",
-      "photo2": "J",
-      "video1": "J",
-      "video2": "K"
-    }
   },
   "assetsBasePath": "",
   "photoFolder": "Fotos",
