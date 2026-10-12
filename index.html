@@ -273,6 +273,79 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
 .video-player{min-height:0}
 }
 
+
+/* Perfil reorganizado: foto compacta, localização da mesma altura e navegação num cartão inferior */
+.store-overview{
+    display:grid;
+    grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);
+    align-items:stretch;
+    gap:18px;
+}
+.store-photo-wrap{display:flex;min-width:0;min-height:0;height:100%;align-self:stretch}
+.store-photo-gallery{
+    position:relative;width:100%;height:100%;min-height:0;flex:1 1 auto;aspect-ratio:auto;
+    overflow:hidden;border-radius:20px;background:linear-gradient(145deg,#e9dfce,#dcd0bc);touch-action:pan-y;
+}
+.store-photo-placeholder{position:absolute;inset:0;min-height:0;z-index:1}
+.store-location-panel{
+    display:flex;flex-direction:column;height:100%;min-height:0;padding:24px;
+    border:1px solid rgba(23,99,68,.13);border-radius:20px;
+    background:linear-gradient(150deg,#fffdf8 0%,#f2eadc 100%);
+    box-shadow:0 10px 24px rgba(66,51,31,.055);
+}
+.store-location-panel .detail-row{margin-top:18px}
+.store-location-panel .detail-row:first-of-type{margin-top:21px}
+.store-location-panel .detail-copy strong{font-size:14px;line-height:1.45}
+.profile-navigation-card{
+    margin-top:18px;padding:22px 24px;border:1px solid rgba(23,99,68,.14);border-radius:20px;
+    background:linear-gradient(145deg,#fffdf8 0%,#f3ebde 100%);
+    box-shadow:0 10px 24px rgba(66,51,31,.055);
+}
+.profile-navigation-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:17px}
+.profile-navigation-heading h2{margin:5px 0;font-size:22px;letter-spacing:-.035em}
+.profile-navigation-heading p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+.destination-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.destination-button{
+    display:flex;align-items:center;gap:13px;width:100%;min-height:76px;padding:15px 17px;
+    border:1px solid rgba(23,99,68,.16);border-radius:15px;text-align:left;color:var(--ink);
+    background:linear-gradient(135deg,#f9f4e9,#eaf0e5);
+    transition:background .15s ease,box-shadow .15s ease,transform .15s ease;
+}
+.destination-button:hover{background:linear-gradient(135deg,#f3ead9,#e1ecdf);box-shadow:0 6px 15px rgba(32,60,40,.09)}
+.destination-symbol{display:flex;align-items:center;justify-content:center;width:42px;height:42px;flex:0 0 42px;border-radius:13px;background:#176344;color:white;font-size:24px;font-weight:600}
+.destination-button-copy{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.destination-button-copy strong{font-size:14px;line-height:1.35;font-weight:750}
+.destination-button-copy small{color:var(--muted);font-size:11px;line-height:1.4}
+.destination-chevron{color:#176344;font-size:26px;font-weight:400}
+.navigation-modal[hidden]{display:none!important}
+.navigation-modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.navigation-modal-backdrop{position:absolute;inset:0;background:rgba(22,31,25,.48);backdrop-filter:blur(4px)}
+.navigation-modal-card{position:relative;z-index:1;width:min(100%,420px);padding:29px 25px 25px;border:1px solid rgba(255,255,255,.75);border-radius:23px;background:linear-gradient(145deg,#fffdf8,#f1e7d7);box-shadow:0 24px 75px rgba(0,0,0,.24)}
+.navigation-modal-card h2{margin:7px 0;font-size:25px;letter-spacing:-.035em}
+.navigation-modal-card p{margin:0 0 20px;color:var(--muted);font-size:14px;line-height:1.5}
+.navigation-modal-close{position:absolute;top:13px;right:13px;width:34px;height:34px;border:0;border-radius:50%;background:#e8e0d4;color:#475348;font-size:24px;line-height:1}
+.chooser-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.navigation-modal-card .nav-btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:10px 8px;border-radius:13px;font-size:13px;font-weight:700}
+.navigation-modal-card .maps{border:1px solid #d9dedb;background:#fff;color:#3c4741}
+.navigation-modal-card .waze{border:1px solid #b8d7d9;background:#dff0eb;color:#245d68}
+@media(max-width:760px){
+    .store-overview{grid-template-columns:minmax(0,1fr);gap:13px}
+    .store-photo-wrap{height:auto;min-height:0}
+    .store-photo-gallery{height:auto;min-height:0;aspect-ratio:1.48/1;flex:none}
+    .store-location-panel{height:auto;min-height:0;padding:19px 17px}
+    .store-location-panel .detail-row{margin-top:16px}
+    .store-location-panel .detail-row:first-of-type{margin-top:18px}
+    .profile-navigation-card{margin-top:14px;padding:19px 16px}
+    .destination-buttons{grid-template-columns:1fr;gap:10px}
+    .destination-button{min-height:68px;padding:12px 13px}
+}
+@media(max-width:460px){
+    .profile-navigation-heading h2{font-size:20px}
+    .destination-button-copy strong{font-size:13px}
+    .navigation-modal-card{padding:27px 18px 20px}
+    .chooser-options{grid-template-columns:1fr 1fr}
+}
+
 </style>
 
 </head>
@@ -364,7 +437,7 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
                                     <path d="M13 47 27 34l9 8 7-6 8 11"></path>
                                 </svg>
                                 <strong id="photoPlaceholderTitle">Fotografia da loja</strong>
-                                <span id="photoPlaceholderDescription">A fotografia será carregada a partir da coluna J ou K do Excel.</span>
+                                <span id="photoPlaceholderDescription">A fotografia será carregada a partir da pasta Fotos.</span>
                             </div>
                             <img id="storePhoto" class="store-photo-image" alt="Fotografia da loja" hidden>
                             <button id="photoPrev" class="photo-arrow photo-prev" type="button" aria-label="Fotografia anterior" onclick="changeStorePhoto(-1)" hidden>‹</button>
@@ -375,7 +448,6 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
 
                     <div class="store-location-panel">
                         <div class="panel-kicker">LOCALIZAÇÃO E ACESSO</div>
-
                         <div class="detail-row">
                             <div class="detail-icon address-icon">⌖</div>
                             <div class="detail-copy">
@@ -383,7 +455,6 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
                                 <strong id="storeAddress">Morada a configurar</strong>
                             </div>
                         </div>
-
                         <div class="detail-row">
                             <div class="detail-icon gps-icon">◎</div>
                             <div class="detail-copy">
@@ -391,7 +462,6 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
                                 <strong id="storeCoordinates">Coordenadas a configurar</strong>
                             </div>
                         </div>
-
                         <div class="detail-row contact-detail-row">
                             <div class="detail-icon contact-icon">☎</div>
                             <div class="detail-copy">
@@ -399,39 +469,53 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
                                 <a id="storeContact" class="contact-link is-placeholder" aria-disabled="true">Contacto a configurar</a>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="location-divider"></div>
-
-                        <div class="navigation-group">
-                            <div class="navigation-heading">Navegar até ponto de espera</div>
-                            <p class="navigation-description">Abrir o percurso até ao ponto de espera da loja.</p>
-                            <div class="nav-options">
-                                <button class="nav-btn maps" onclick="navigateWaitingPoint('maps')">
-                                    <span class="profile-nav-symbol maps-symbol">G</span>
-                                    <span>Google Maps</span>
-                                </button>
-                                <button class="nav-btn waze" onclick="navigateWaitingPoint('waze')">
-                                    <span class="profile-nav-symbol waze-symbol">w</span>
-                                    <span>Waze</span>
-                                </button>
-                            </div>
+                <section class="profile-navigation-card" aria-label="Navegação para o serviço">
+                    <div class="profile-navigation-heading">
+                        <div>
+                            <div class="panel-kicker">NAVEGAÇÃO</div>
+                            <h2>Para onde pretende ir?</h2>
+                            <p>Selecione o destino e depois escolha Google Maps ou Waze.</p>
                         </div>
+                    </div>
+                    <div class="destination-buttons">
+                        <button class="destination-button waiting-destination" type="button" onclick="openNavigationChooser('waitingPoint')">
+                            <span class="destination-symbol">↗</span>
+                            <span class="destination-button-copy">
+                                <strong>Navegar até ponto de espera</strong>
+                                <small>Entrada e zona de espera</small>
+                            </span>
+                            <span class="destination-chevron">›</span>
+                        </button>
+                        <button class="destination-button store-destination" type="button" onclick="openNavigationChooser('store')">
+                            <span class="destination-symbol">⌖</span>
+                            <span class="destination-button-copy">
+                                <strong>Navegar até à loja</strong>
+                                <small>Morada de descarga</small>
+                            </span>
+                            <span class="destination-chevron">›</span>
+                        </button>
+                    </div>
+                </section>
 
-                        <div class="location-divider navigation-separator"></div>
-
-                        <div class="navigation-group">
-                            <div class="navigation-heading">Navegar até à loja</div>
-                            <p class="navigation-description">Escolha a aplicação de navegação.</p>
-                            <div class="nav-options">
-                                <button class="nav-btn maps" onclick="navigate('maps')">
-                                    <span class="profile-nav-symbol maps-symbol">G</span>
-                                    <span>Google Maps</span>
-                                </button>
-                                <button class="nav-btn waze" onclick="navigate('waze')">
-                                    <span class="profile-nav-symbol waze-symbol">w</span>
-                                    <span>Waze</span>
-                                </button>
-                            </div>
+                <div id="navigationChooser" class="navigation-modal" hidden role="dialog" aria-modal="true" aria-labelledby="navigationChooserTitle">
+                    <div class="navigation-modal-backdrop" onclick="closeNavigationChooser()"></div>
+                    <div class="navigation-modal-card">
+                        <button type="button" class="navigation-modal-close" aria-label="Fechar" onclick="closeNavigationChooser()">×</button>
+                        <div class="panel-kicker">ESCOLHER APLICAÇÃO</div>
+                        <h2 id="navigationChooserTitle">Abrir navegação</h2>
+                        <p id="navigationChooserDescription">Escolha a aplicação que pretende utilizar.</p>
+                        <div class="nav-options chooser-options">
+                            <button class="nav-btn maps" type="button" onclick="chooseNavigationApp('maps')">
+                                <span class="profile-nav-symbol maps-symbol">G</span>
+                                <span>Google Maps</span>
+                            </button>
+                            <button class="nav-btn waze" type="button" onclick="chooseNavigationApp('waze')">
+                                <span class="profile-nav-symbol waze-symbol">w</span>
+                                <span>Waze</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1200,6 +1284,39 @@ function extractDestinationFromLink(rawLink) {
     }
     return '';
 }
+
+let selectedNavigationDestination = '';
+
+function openNavigationChooser(destinationType) {
+    if (!selectedStore) return;
+    selectedNavigationDestination = destinationType;
+    const title = document.getElementById('navigationChooserTitle');
+    const description = document.getElementById('navigationChooserDescription');
+    if (destinationType === 'waitingPoint') {
+        title.textContent = 'Navegar até ponto de espera';
+        description.textContent = 'Escolha Google Maps ou Waze para chegar ao ponto de espera.';
+    } else {
+        title.textContent = 'Navegar até à loja';
+        description.textContent = 'Escolha Google Maps ou Waze para chegar à loja.';
+    }
+    document.getElementById('navigationChooser').hidden = false;
+}
+
+function closeNavigationChooser() {
+    const chooser = document.getElementById('navigationChooser');
+    if (chooser) chooser.hidden = true;
+}
+
+function chooseNavigationApp(appType) {
+    const destinationType = selectedNavigationDestination;
+    closeNavigationChooser();
+    if (!destinationType) return;
+    openNavigation(destinationType, appType);
+}
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeNavigationChooser();
+});
 
 function openNavigation(destinationType, appType) {
     if (!selectedStore) return;
