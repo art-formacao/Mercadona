@@ -17,8 +17,8 @@
     "contact": "I",
     "photo1": "J",
     "photo2": "K",
-    "video1": "L",
-    "video2": "M"
+    "video1": "J",
+    "video2": "K"
   },
   "columnsBySheet": {
     "Póvoa de Varzim": {
@@ -26,8 +26,8 @@
       "contact": "H",
       "photo1": "I",
       "photo2": "J",
-      "video1": "K",
-      "video2": "L"
+      "video1": "J",
+      "video2": "K"
     }
   },
   "assetsBasePath": "",

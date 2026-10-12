@@ -3,7 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Serviço - Mercadona / TJA</title>
+<title>Serviço Mercadona</title>
+<link rel="manifest" href="./site.webmanifest">
+<link rel="icon" href="./favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+<meta name="theme-color" content="#176344">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Serviço Mercadona">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 
 <style>
 :root{--green:#176344;--green-dark:#104b34;--ink:#202923;--muted:#66736b;--surface:#fffaf2;--page:#eee8dc;--line:rgba(40,55,44,.13);--blue:#315d78;--sand:#e4d4b8;--gold:#b58a4b}
@@ -589,8 +599,8 @@ const DEFAULT_CONFIG = {
         contact: "I",
         photo1: "J",
         photo2: "K",
-        video1: "L",
-        video2: "M"
+        video1: "J",
+        video2: "K"
     },
     // Fotografias por número de loja na pasta Fotos: 7009.1.jpg e 7009.2.jpg (extensões comuns aceites).
     photoFolder: "Fotos",
@@ -603,8 +613,8 @@ const DEFAULT_CONFIG = {
             contact: "H",
             photo1: "I",
             photo2: "J",
-            video1: "K",
-            video2: "L"
+            video1: "J",
+            video2: "K"
         }
     },
     assetsBasePath: ""
@@ -665,7 +675,16 @@ function setDataStatus(message, isError = false, showPicker = false, isSuccess =
     const status = document.getElementById('dataStatus');
     if (!status) return;
     status.replaceChildren();
-    status.className = 'data-status' + (isError ? ' error' : '') + (isSuccess ? ' success' : '');
+
+    // A mensagem de sucesso é intencionalmente ocultada para não ocupar espaço no ecrã.
+    // Mensagens de carregamento e erros continuam visíveis.
+    if (isSuccess) {
+        status.hidden = true;
+        return;
+    }
+
+    status.hidden = false;
+    status.className = 'data-status' + (isError ? ' error' : '');
     const text = document.createElement('span');
     text.textContent = message;
     status.appendChild(text);
@@ -1409,6 +1428,15 @@ function goBack() {
 
 attachPhotoSwipe();
 loadConfiguredWorkbook();
+
+if ('serviceWorker' in navigator && /^https?:$/.test(window.location.protocol)) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(error => {
+            console.warn('Não foi possível registar o service worker:', error);
+        });
+    });
+}
+
 </script>
 </body>
 </html>

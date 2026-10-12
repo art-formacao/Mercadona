@@ -1,0 +1,19 @@
+# Instalação — Serviço Mercadona / TJA
+
+Na raiz da publicação do GitHub Pages devem ficar:
+- `index.html` — aplicação
+- `manifest.json` — configuração para leitura do Excel
+- `Dados.xlsx` — livro Excel
+- `site.webmanifest` — configuração para instalar como aplicação e respetivos ícones
+- `sw.js` — service worker
+- os ícones `.ico`/`.png` incluídos neste pacote
+- pasta `Fotos/` — fotografias das lojas (`7009.1.jpg`, `7009.2.jpg`, etc.)
+
+A mensagem verde “Dados carregados automaticamente…” já não aparece após a leitura bem-sucedida do Excel. Avisos de erro continuam visíveis.
+
+## Instalar no telemóvel
+**Android:** abre o site publicado em HTTPS no Chrome/Edge, abre o menu e escolhe “Instalar aplicação” ou “Adicionar ao ecrã inicial”.
+
+**iPhone/iPad:** abre o site em HTTPS no Safari, toca em Partilhar e escolhe “Adicionar ao ecrã principal”.
+
+O ícone de instalação usa as imagens fornecidas, com `icon-192.png` e `icon-512.png` para Android/PWA e `apple-touch-icon.png` para iPhone/iPad. A instalação só pode ser confirmada depois de publicar os ficheiros e abrir o endereço HTTPS do site.
