@@ -1,1 +1,1 @@
-# Servi-o-Mercadona
+# Mercadona
