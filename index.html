@@ -482,13 +482,15 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const DEFAULT_CONFIG = {
     workbook: "Dados.xlsx",
+    // O nome à esquerda é o nome apresentado na aplicação; à direita está o nome exato da folha no Excel.
     sheets: {
-        "Almeirim": "Almeirim",
-        "Póvoa de Varzim": "Póvoa de Varzim"
+        "Almeirim": "Almerim",
+        "Póvoa de Varzim": "Póvoa do Varzim"
     },
     firstDataRow: 2,
     columns: {
@@ -505,6 +507,21 @@ const DEFAULT_CONFIG = {
         photo2: "K",
         video1: "L",
         video2: "M"
+    },
+    // Fotografias por número de loja na pasta Fotos: 7009.1.jpg e 7009.2.jpg (extensões comuns aceites).
+    photoFolder: "Fotos",
+    photoPattern: "{number}.{index}",
+    photoExtensions: ["", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif", ".JPG", ".JPEG", ".PNG", ".WEBP", ".GIF"],
+    // A folha Póvoa do Varzim atualmente não tem coluna Notas; os campos seguintes estão uma coluna à esquerda.
+    columnsBySheet: {
+        "Póvoa de Varzim": {
+            notes: "",
+            contact: "H",
+            photo1: "I",
+            photo2: "J",
+            video1: "K",
+            video2: "L"
+        }
     },
     assetsBasePath: ""
 };
@@ -541,11 +558,22 @@ function normalizeKey(value) {
 
 function mergeManifest(config) {
     if (!config || typeof config !== 'object') return;
+    const columnsBySheet = { ...DEFAULT_CONFIG.columnsBySheet };
+    for (const [sheetKey, overrides] of Object.entries(config.columnsBySheet || {})) {
+        columnsBySheet[sheetKey] = {
+            ...(columnsBySheet[sheetKey] || {}),
+            ...(overrides || {})
+        };
+    }
     manifestConfig = {
         ...DEFAULT_CONFIG,
         ...config,
         sheets: { ...DEFAULT_CONFIG.sheets, ...(config.sheets || {}) },
-        columns: { ...DEFAULT_CONFIG.columns, ...(config.columns || {}) }
+        columns: { ...DEFAULT_CONFIG.columns, ...(config.columns || {}) },
+        columnsBySheet,
+        photoFolder: config.photoFolder || DEFAULT_CONFIG.photoFolder,
+        photoPattern: config.photoPattern || DEFAULT_CONFIG.photoPattern,
+        photoExtensions: Array.isArray(config.photoExtensions) ? config.photoExtensions : DEFAULT_CONFIG.photoExtensions
     };
 }
 
@@ -578,8 +606,10 @@ async function loadConfiguredWorkbook() {
         if (!response.ok) throw new Error('Não foi possível encontrar ' + workbookUrl + ' na mesma pasta da aplicação.');
         await parseWorkbookArrayBuffer(await response.arrayBuffer(), workbookUrl);
     } catch (error) {
+        const detail = error && error.message ? error.message : 'Erro desconhecido.';
         setDataStatus(
-            'Não foi possível carregar Dados.xlsx automaticamente. Confirme que Dados.xlsx e manifest.json estão publicados na mesma pasta que o HTML e que os nomes dos ficheiros e das folhas coincidem. Se abriu o HTML diretamente no computador, publique a pasta no GitHub Pages ou Netlify.',
+            'Falha no carregamento automático: ' + detail +
+            ' Confirme que index.html, manifest.json e Dados.xlsx estão publicados na raiz do GitHub Pages.',
             true
         );
     }
@@ -593,8 +623,13 @@ function columnToIndex(columnLetters) {
     return Math.max(0, number - 1);
 }
 
-function readExcelCell(worksheet, rowIndex, columnKey, preferHyperlink = false) {
-    const columnLetters = manifestConfig.columns[columnKey] || DEFAULT_CONFIG.columns[columnKey];
+function readExcelCell(worksheet, rowIndex, columnKey, preferHyperlink = false, columnsOverride = null) {
+    const columns = columnsOverride || manifestConfig.columns || DEFAULT_CONFIG.columns;
+    const columnLetters = Object.prototype.hasOwnProperty.call(columns, columnKey)
+        ? columns[columnKey]
+        : DEFAULT_CONFIG.columns[columnKey];
+    if (columnLetters === null || columnLetters === undefined || !String(columnLetters).trim()) return '';
+
     const colIndex = columnToIndex(columnLetters);
     const address = window.XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
     const cell = worksheet[address];
@@ -613,6 +648,7 @@ function readExcelCell(worksheet, rowIndex, columnKey, preferHyperlink = false) 
     }
 
     const value = cell.w !== undefined && cell.w !== null ? cell.w : cell.v;
+    if (value === '#VALUE!' || value === '#REF!' || value === '#N/A') return '';
     return value === undefined || value === null ? '' : String(value).trim();
 }
 
@@ -623,6 +659,41 @@ function getAssetValue(value) {
     const cleaned = text.replace(/\\/g, '/').replace(/^\.\/+/, '');
     const basePath = String(manifestConfig.assetsBasePath || '').replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
     return (basePath ? basePath + '/' : '') + cleaned;
+}
+
+
+function buildPhotoCandidates(storeNumber, imageIndex) {
+    const folder = String(manifestConfig.photoFolder || 'Fotos').replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+    const pattern = String(manifestConfig.photoPattern || '{number}.{index}');
+    const basePath = String(manifestConfig.assetsBasePath || '').replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+    const baseName = pattern
+        .replace(/\{number\}/g, String(storeNumber).trim())
+        .replace(/\{index\}/g, String(imageIndex));
+    const extensions = Array.isArray(manifestConfig.photoExtensions)
+        ? manifestConfig.photoExtensions
+        : ['', '.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'];
+    const prefix = [basePath, folder].filter(Boolean).join('/');
+    const candidates = [...new Set(extensions.map(ext => [prefix, baseName + ext].filter(Boolean).join('/')))];
+    return candidates;
+}
+
+async function findPhotoInFolder(storeNumber, imageIndex) {
+    const candidates = buildPhotoCandidates(storeNumber, imageIndex);
+    const checks = await Promise.all(candidates.map(async candidate => {
+        try {
+            const response = await fetch(candidate, { method: 'HEAD', cache: 'no-store' });
+            return response.ok ? candidate : '';
+        } catch (error) {
+            return '';
+        }
+    }));
+    return checks.find(Boolean) || '';
+}
+
+async function findStorePhotos(storeNumber) {
+    const first = await findPhotoInFolder(storeNumber, 1);
+    const second = await findPhotoInFolder(storeNumber, 2);
+    return [first, second].filter(Boolean);
 }
 
 function looksLikeHeader(number, name) {
@@ -636,9 +707,116 @@ function findWorksheetName(workbook, wantedName) {
     return workbook.SheetNames.find(name => normalizeKey(name) === normalizeKey(wantedName));
 }
 
+
+async function extractEmbeddedCellImages(arrayBuffer) {
+    const result = {};
+    if (!window.JSZip || !window.DOMParser) return result;
+
+    try {
+        const zip = await window.JSZip.loadAsync(arrayBuffer.slice(0));
+        const parseXml = async path => {
+            const entry = zip.file(path);
+            if (!entry) return null;
+            const text = await entry.async('text');
+            return new DOMParser().parseFromString(text, 'application/xml');
+        };
+        const localElements = (node, name) =>
+            node ? Array.from(node.getElementsByTagNameNS('*', name)) : [];
+        const attrRelId = node =>
+            node.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id') ||
+            node.getAttribute('r:id') || '';
+
+        const workbookDoc = await parseXml('xl/workbook.xml');
+        const workbookRelsDoc = await parseXml('xl/_rels/workbook.xml.rels');
+        const metadataDoc = await parseXml('xl/metadata.xml');
+        const richValuesDoc = await parseXml('xl/richData/rdrichvalue.xml');
+        const richValueRelsDoc = await parseXml('xl/richData/richValueRel.xml');
+        const richValueRelsRelsDoc = await parseXml('xl/richData/_rels/richValueRel.xml.rels');
+        if (!workbookDoc || !workbookRelsDoc || !metadataDoc || !richValuesDoc || !richValueRelsDoc || !richValueRelsRelsDoc) {
+            return result;
+        }
+
+        const cleanZipPath = path => {
+            const parts = [];
+            String(path).replace(/\\\\/g, '/').split('/').forEach(part => {
+                if (!part || part === '.') return;
+                if (part === '..') parts.pop();
+                else parts.push(part);
+            });
+            return parts.join('/');
+        };
+        const resolveZipTarget = (basePath, target) =>
+            target.startsWith('/') ? cleanZipPath(target) : cleanZipPath(basePath.split('/').slice(0, -1).concat(target).join('/'));
+
+        const workbookRelMap = {};
+        for (const rel of localElements(workbookRelsDoc, 'Relationship')) {
+            workbookRelMap[rel.getAttribute('Id')] = rel.getAttribute('Target');
+        }
+        const richRelTargetMap = {};
+        for (const rel of localElements(richValueRelsRelsDoc, 'Relationship')) {
+            richRelTargetMap[rel.getAttribute('Id')] = resolveZipTarget('xl/richData/richValueRel.xml', rel.getAttribute('Target') || '');
+        }
+        const richRelIds = localElements(richValueRelsDoc, 'rel').map(attrRelId);
+        const richValues = localElements(richValuesDoc, 'rv');
+        const valueMetadata = localElements(metadataDoc, 'valueMetadata')[0];
+        const metadataEntries = valueMetadata ? Array.from(valueMetadata.children).filter(el => el.localName === 'bk') : [];
+
+        const mediaData = {};
+        for (let i = 0; i < richValues.length; i++) {
+            const vals = localElements(richValues[i], 'v').map(el => el.textContent.trim());
+            const imageIndex = Number(vals[0]);
+            const relId = richRelIds[imageIndex];
+            const mediaPath = richRelTargetMap[relId];
+            if (!mediaPath || mediaData[mediaPath]) continue;
+            const mediaFile = zip.file(mediaPath);
+            if (!mediaFile) continue;
+            const ext = (mediaPath.split('.').pop() || '').toLowerCase();
+            const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' :
+                         ext === 'gif' ? 'image/gif' :
+                         ext === 'webp' ? 'image/webp' : 'image/png';
+            mediaData[mediaPath] = 'data:' + mime + ';base64,' + await mediaFile.async('base64');
+        }
+
+        const sheets = localElements(workbookDoc, 'sheet');
+        for (const sheet of sheets) {
+            const sheetName = sheet.getAttribute('name') || '';
+            const rid = attrRelId(sheet);
+            const target = workbookRelMap[rid];
+            if (!target) continue;
+            const sheetPath = target.startsWith('/') ? cleanZipPath(target) : cleanZipPath('xl/' + target);
+            const sheetDoc = await parseXml(sheetPath);
+            if (!sheetDoc) continue;
+
+            const map = result[sheetName] = result[sheetName] || {};
+            for (const cell of localElements(sheetDoc, 'c')) {
+                const vm = Number(cell.getAttribute('vm') || 0);
+                if (!vm) continue;
+                const metadataEntry = metadataEntries[vm - 1];
+                if (!metadataEntry) continue;
+                const rc = localElements(metadataEntry, 'rc')[0];
+                if (!rc) continue;
+                const richValueIndex = Number(rc.getAttribute('v'));
+                const richValue = richValues[richValueIndex];
+                if (!richValue) continue;
+                const vals = localElements(richValue, 'v').map(el => el.textContent.trim());
+                const imageIndex = Number(vals[0]);
+                const relId = richRelIds[imageIndex];
+                const mediaPath = richRelTargetMap[relId];
+                if (!mediaPath || !mediaData[mediaPath]) continue;
+                map[cell.getAttribute('r')] = mediaData[mediaPath];
+            }
+        }
+    } catch (error) {
+        // Se o Excel não usar imagens em células, a aplicação continua a ler os restantes dados normalmente.
+        console.warn('Não foi possível extrair imagens incorporadas no Excel:', error);
+    }
+    return result;
+}
+
 async function parseWorkbookArrayBuffer(arrayBuffer, fileName) {
     if (!window.XLSX) throw new Error('Biblioteca XLSX indisponível.');
     const workbook = window.XLSX.read(arrayBuffer, { type: 'array', cellStyles: false, cellHTML: false });
+    const embeddedImages = {}; // As fotografias do perfil são obtidas pela pasta Fotos, não pelas colunas J/K.
     const parsedStores = [];
     const missingSheets = [];
     const sheetMap = manifestConfig.sheets || DEFAULT_CONFIG.sheets;
@@ -653,14 +831,31 @@ async function parseWorkbookArrayBuffer(arrayBuffer, fileName) {
 
         const worksheet = workbook.Sheets[actualSheetName];
         const rows = window.XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false });
+        const sheetColumns = {
+            ...(manifestConfig.columns || DEFAULT_CONFIG.columns),
+            ...((manifestConfig.columnsBySheet || {})[interpostName] || {})
+        };
+        const imageCells = embeddedImages[actualSheetName] || {};
+
         for (let rowIndex = firstIndex; rowIndex < rows.length; rowIndex++) {
             const row = rows[rowIndex] || [];
-            const number = readExcelCell(worksheet, rowIndex, 'number');
-            const name = readExcelCell(worksheet, rowIndex, 'name');
-            const locality = readExcelCell(worksheet, rowIndex, 'locality');
+            const number = readExcelCell(worksheet, rowIndex, 'number', false, sheetColumns);
+            const name = readExcelCell(worksheet, rowIndex, 'name', false, sheetColumns);
+            const locality = readExcelCell(worksheet, rowIndex, 'locality', false, sheetColumns);
 
             if ((!number && !name) || looksLikeHeader(number, name)) continue;
             if (!String(number).trim() || !String(name).trim()) continue;
+
+            const excelRow = rowIndex + 1;
+            const photo1Column = String(sheetColumns.photo1 || '').toUpperCase();
+            const photo2Column = String(sheetColumns.photo2 || '').toUpperCase();
+            const embeddedPhoto1 = photo1Column ? imageCells[photo1Column + excelRow] : '';
+            const embeddedPhoto2 = photo2Column ? imageCells[photo2Column + excelRow] : '';
+
+            const photo1Cell = readExcelCell(worksheet, rowIndex, 'photo1', true, sheetColumns);
+            const photo2Cell = readExcelCell(worksheet, rowIndex, 'photo2', true, sheetColumns);
+            const video1Cell = readExcelCell(worksheet, rowIndex, 'video1', true, sheetColumns);
+            const video2Cell = readExcelCell(worksheet, rowIndex, 'video2', true, sheetColumns);
 
             const store = {
                 id: normalizeKey(interpostName) + '::' + String(number).trim() + '::' + rowIndex,
@@ -668,34 +863,33 @@ async function parseWorkbookArrayBuffer(arrayBuffer, fileName) {
                 number: String(number).trim(),
                 name: String(name).trim(),
                 city: String(locality || '').trim(),
-                address: readExcelCell(worksheet, rowIndex, 'address'),
-                coordinates: readExcelCell(worksheet, rowIndex, 'coordinates'),
-                waitingLink: readExcelCell(worksheet, rowIndex, 'waitingLink', true),
-                storeLink: readExcelCell(worksheet, rowIndex, 'storeLink', true),
-                notes: readExcelCell(worksheet, rowIndex, 'notes'),
-                contact: readExcelCell(worksheet, rowIndex, 'contact'),
-                photos: [
-                    getAssetValue(readExcelCell(worksheet, rowIndex, 'photo1', true)),
-                    getAssetValue(readExcelCell(worksheet, rowIndex, 'photo2', true))
-                ].filter(Boolean),
+                address: readExcelCell(worksheet, rowIndex, 'address', false, sheetColumns),
+                coordinates: readExcelCell(worksheet, rowIndex, 'coordinates', false, sheetColumns),
+                waitingLink: readExcelCell(worksheet, rowIndex, 'waitingLink', true, sheetColumns),
+                storeLink: readExcelCell(worksheet, rowIndex, 'storeLink', true, sheetColumns),
+                notes: readExcelCell(worksheet, rowIndex, 'notes', false, sheetColumns),
+                contact: readExcelCell(worksheet, rowIndex, 'contact', false, sheetColumns),
+                photos: [],
                 videos: [
-                    getAssetValue(readExcelCell(worksheet, rowIndex, 'video1', true)),
-                    getAssetValue(readExcelCell(worksheet, rowIndex, 'video2', true))
+                    getAssetValue(video1Cell),
+                    getAssetValue(video2Cell)
                 ].filter(Boolean)
             };
+            // As fotografias são procuradas na pasta Fotos apenas quando se abre o perfil desta loja.
             parsedStores.push(store);
         }
     }
 
     if (missingSheets.length) {
-        throw new Error('Não encontrei estas folhas no Excel: ' + missingSheets.join(', ') + '. Confirme os nomes das folhas.');
+        throw new Error('Não encontrei as folhas configuradas: ' + missingSheets.join(', ') +
+            '. No Excel atual, os nomes são "Almerim" e "Póvoa do Varzim".');
     }
     if (!parsedStores.length) {
-        throw new Error('Não encontrei lojas nas folhas Almeirim e Póvoa de Varzim. Confirme os dados nas colunas A, B e C.');
+        throw new Error('Não encontrei lojas nas folhas configuradas. Confirme se os dados começam na linha 2 e se as colunas A, B e C têm número, nome e localidade.');
     }
 
     stores = parsedStores;
-    setDataStatus('Dados carregados com sucesso: ' + stores.length + ' lojas encontradas em ' + fileName + '.', false, false, true);
+    setDataStatus('Dados carregados automaticamente: ' + stores.length + ' lojas encontradas no ficheiro ' + fileName + '.', false, false, true);
     if (selectedInterpost) filterStores();
 }
 
@@ -776,10 +970,34 @@ function openStore(id) {
         setContactPlaceholder(contactLink);
     }
 
-    renderStorePhotos(selectedStore.photos || []);
+    renderStorePhotos([]);
     renderStoreVideos(selectedStore.videos || []);
     renderStoreNotes(selectedStore.notes || '');
     showPage('profile');
+    loadStorePhotosForProfile(selectedStore.id, selectedStore.number);
+}
+
+async function loadStorePhotosForProfile(storeId, storeNumber) {
+    const title = document.getElementById('photoPlaceholderTitle');
+    const description = document.getElementById('photoPlaceholderDescription');
+    title.textContent = 'A procurar fotografias…';
+    description.textContent = 'A verificar a pasta Fotos para a loja ' + storeNumber + '.';
+
+    const photos = await findStorePhotos(storeNumber);
+    const store = stores.find(item => item.id === storeId);
+    if (store) store.photos = photos;
+
+    // If the driver opened a different profile while the lookup was running, don't overwrite it.
+    if (!selectedStore || selectedStore.id !== storeId || currentPage !== 'profile') return;
+
+    if (photos.length) {
+        renderStorePhotos(photos);
+    } else {
+        renderStorePhotos([]);
+        document.getElementById('photoPlaceholderTitle').textContent = 'Fotografias não encontradas';
+        document.getElementById('photoPlaceholderDescription').textContent =
+            'Na pasta Fotos, confirme os nomes ' + storeNumber + '.1 e ' + storeNumber + '.2, com a extensão correta.';
+    }
 }
 
 function setContactPlaceholder(contactLink) {
@@ -804,7 +1022,7 @@ function renderStorePhotos(photos) {
         image.removeAttribute('src');
         placeholder.hidden = false;
         document.getElementById('photoPlaceholderTitle').textContent = 'Fotografia da loja';
-        document.getElementById('photoPlaceholderDescription').textContent = 'Indique um caminho ou link de fotografia na coluna J ou K do Excel.';
+        document.getElementById('photoPlaceholderDescription').textContent = 'Coloque na pasta Fotos os ficheiros ' + selectedStore.number + '.1 e ' + selectedStore.number + '.2 (com extensão, se aplicável).';
         prev.hidden = true;
         next.hidden = true;
         counter.hidden = true;
@@ -829,7 +1047,7 @@ function showStorePhoto() {
         image.hidden = true;
         placeholder.hidden = false;
         document.getElementById('photoPlaceholderTitle').textContent = 'Fotografia indisponível';
-        document.getElementById('photoPlaceholderDescription').textContent = 'Confirme o caminho ou link indicado na coluna J ou K do Excel.';
+        document.getElementById('photoPlaceholderDescription').textContent = 'Confirme se a pasta Fotos contém os ficheiros ' + selectedStore.number + '.1 e ' + selectedStore.number + '.2.';
     };
     image.onload = () => {
         placeholder.hidden = true;
