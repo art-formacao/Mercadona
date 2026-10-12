@@ -791,17 +791,19 @@ function readVideoCell(worksheet, rowIndex, videoNumber, columns) {
         if (url) return url;
     }
 
-    // Último recurso: procura URLs de vídeo na linha, sem confundir os links de navegação.
+    // Último recurso: recolhe URLs de vídeo distintas na linha e devolve a correspondente
+    // ao número do vídeo. Se só houver um link, a chamada para Video2 devolve vazio.
     if (worksheet && worksheet['!ref']) {
         const range = window.XLSX.utils.decode_range(worksheet['!ref']);
+        const rowVideoUrls = [];
+        const isVideoUrl = /drive\.google\.com\/(?:file\/d\/|open\?id=)|docs\.google\.com\/.*\/d\/|youtube\.com\/|youtu\.be\/|vimeo\.com\/|\.mp4(?:[?#]|$)|\.webm(?:[?#]|$)|\.ogg(?:[?#]|$)/i;
         for (let col = range.s.c; col <= range.e.c; col++) {
             const address = window.XLSX.utils.encode_cell({ r: rowIndex, c: col });
             const url = extractUrlFromExcelCell(worksheet[address]);
-            if (!url) continue;
-            if (/drive\.google\.com\/file\/d\/|docs\.google\.com\/.*\/d\/|youtube\.com\/|youtu\.be\/|vimeo\.com\/|\.mp4(?:[?#]|$)|\.webm(?:[?#]|$)|\.ogg(?:[?#]|$)/i.test(url)) {
-                return url;
-            }
+            if (!url || !isVideoUrl.test(url)) continue;
+            if (!rowVideoUrls.includes(url)) rowVideoUrls.push(url);
         }
+        return rowVideoUrls[videoNumber - 1] || '';
     }
     return '';
 }
@@ -1059,10 +1061,10 @@ async function parseWorkbookArrayBuffer(arrayBuffer, fileName) {
                 notes: readExcelCell(worksheet, rowIndex, 'notes', false, sheetColumns),
                 contact: readExcelCell(worksheet, rowIndex, 'contact', false, sheetColumns),
                 photos: [],
-                videos: [
+                videos: [...new Set([
                     getAssetValue(video1Cell),
                     getAssetValue(video2Cell)
-                ].filter(Boolean)
+                ].filter(Boolean))]
             };
             // As fotografias são procuradas na pasta Fotos apenas quando se abre o perfil desta loja.
             parsedStores.push(store);
@@ -1258,18 +1260,19 @@ function changeStorePhoto(direction) {
 function renderStoreVideos(videos) {
     const grid = document.getElementById('storeVideoGrid');
     const count = document.getElementById('videoCount');
+    const availableVideos = [...new Set((videos || []).map(value => String(value ?? '').trim()).filter(Boolean))];
     grid.replaceChildren();
-    count.textContent = videos.length + (videos.length === 1 ? ' vídeo' : ' vídeos');
+    count.textContent = availableVideos.length + (availableVideos.length === 1 ? ' vídeo' : ' vídeos');
 
-    if (!videos.length) {
+    if (!availableVideos.length) {
         const empty = document.createElement('div');
         empty.className = 'media-empty-state';
-        empty.textContent = 'Não foram encontrados links nas células Video1 e Video2 desta loja. Confirme que as células contêm links válidos do Google Drive ou vídeos.';
+        empty.textContent = 'Sem vídeos disponíveis para esta loja.';
         grid.appendChild(empty);
         return;
     }
 
-    videos.slice(0, 2).forEach((value, index) => {
+    availableVideos.slice(0, 2).forEach((value, index) => {
         const card = document.createElement('div');
         card.className = 'video-placeholder';
         const url = String(value).trim();
