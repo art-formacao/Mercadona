@@ -255,6 +255,7 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
 
 
 /* Ligação ao Excel Dados.xlsx */
+.data-status[hidden]{display:none!important}
 .data-status{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 17px;padding:12px 15px;border:1px solid rgba(23,99,68,.15);border-radius:13px;background:#eef3e9;color:#315a43;font-size:12px;line-height:1.5}
 .data-status.error{border-color:#e6c89b;background:#fbefd9;color:#76521e}
 .data-status.success{border-color:#c7ddc4;background:#eaf4e7;color:#245b3b}
@@ -540,7 +541,7 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
                         <span id="videoCount" class="section-count">0 vídeos</span>
                     </div>
                     <div id="storeVideoGrid" class="store-video-grid">
-                        <div class="media-empty-state">Os vídeos serão carregados a partir das colunas L e M do Excel.</div>
+                        <div class="media-empty-state">Os vídeos serão carregados a partir das colunas J e K do Excel.</div>
                     </div>
                 </section>
 
@@ -1177,7 +1178,7 @@ function renderStoreVideos(videos) {
     if (!videos.length) {
         const empty = document.createElement('div');
         empty.className = 'media-empty-state';
-        empty.textContent = 'Não há vídeos indicados nas colunas L e M para esta loja.';
+        empty.textContent = 'Não há vídeos indicados nas colunas J e K para esta loja.';
         grid.appendChild(empty);
         return;
     }
