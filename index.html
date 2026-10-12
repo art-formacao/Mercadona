@@ -727,20 +727,51 @@ function readExcelCell(worksheet, rowIndex, columnKey, preferHyperlink = false, 
     if (!cell) return '';
 
     const formula = String(cell.f || '');
-    if (preferHyperlink && cell.l && cell.l.Target) return String(cell.l.Target).trim();
+    const hyperlinkTarget = cell.l && (cell.l.Target || cell.l.target || cell.l.href);
+    if (preferHyperlink && hyperlinkTarget) return String(hyperlinkTarget).trim();
 
-    if (preferHyperlink && /HYPERLINK\s*\(/i.test(formula)) {
-        const match = formula.match(/HYPERLINK\s*\(\s*"([^"]+)"/i);
-        if (match) return match[1].trim();
-    }
-    if (preferHyperlink && /IMAGE\s*\(/i.test(formula)) {
-        const match = formula.match(/IMAGE\s*\(\s*"([^"]+)"/i);
-        if (match) return match[1].trim();
+    if (preferHyperlink) {
+        const formulaUrl = formula.match(/(?:HYPERLINK|IMAGE)\s*\(\s*"(https?:\/\/[^" ]+)"/i);
+        if (formulaUrl) return formulaUrl[1].trim();
     }
 
-    const value = cell.w !== undefined && cell.w !== null ? cell.w : cell.v;
-    if (value === '#VALUE!' || value === '#REF!' || value === '#N/A') return '';
-    return value === undefined || value === null ? '' : String(value).trim();
+    // Hyperlinked cells can expose the target separately from the displayed text.
+    // Prefer whichever cell field actually contains a URL.
+    const values = [cell.v, cell.w, cell.h].filter(value => value !== undefined && value !== null).map(String);
+    if (preferHyperlink) {
+        const urlValue = values.find(value => /(?:https?:\/\/|www\.)\S+/i.test(value));
+        if (urlValue) {
+            const match = urlValue.match(/https?:\/\/\S+/i) || urlValue.match(/www\.\S+/i);
+            if (match) return match[0].replace(/[),;]+$/, '').trim();
+        }
+    }
+
+    const value = cell.v !== undefined && cell.v !== null ? cell.v : (cell.w !== undefined && cell.w !== null ? cell.w : '');
+    if (['#VALUE!', '#REF!', '#N/A'].includes(String(value).trim())) return '';
+    return String(value).trim();
+}
+
+function detectHeaderColumn(worksheet, acceptedNames) {
+    if (!worksheet || !worksheet['!ref']) return '';
+    const range = window.XLSX.utils.decode_range(worksheet['!ref']);
+    const accepted = new Set(acceptedNames.map(value => normalizeKey(value).replace(/[^a-z0-9]/g, '')));
+    for (let col = range.s.c; col <= range.e.c; col++) {
+        const cell = worksheet[window.XLSX.utils.encode_cell({ r: 0, c: col })];
+        if (!cell) continue;
+        const visible = cell.v !== undefined && cell.v !== null ? cell.v : cell.w;
+        const normalized = normalizeKey(visible).replace(/[^a-z0-9]/g, '');
+        if (accepted.has(normalized)) return window.XLSX.utils.encode_col(col);
+    }
+    return '';
+}
+
+function applyDetectedVideoColumns(worksheet, columns) {
+    // Os cabeçalhos Video1/Video2 no próprio Excel têm prioridade sobre letras antigas no manifesto.
+    const video1 = detectHeaderColumn(worksheet, ['Video1', 'Vídeo1', 'Video 1', 'Vídeo 1', 'LinkVideo1', 'Link Vídeo 1']);
+    const video2 = detectHeaderColumn(worksheet, ['Video2', 'Vídeo2', 'Video 2', 'Vídeo 2', 'LinkVideo2', 'Link Vídeo 2']);
+    if (video1) columns.video1 = video1;
+    if (video2) columns.video2 = video2;
+    return columns;
 }
 
 function getAssetValue(value) {
@@ -926,6 +957,8 @@ async function parseWorkbookArrayBuffer(arrayBuffer, fileName) {
             ...(manifestConfig.columns || DEFAULT_CONFIG.columns),
             ...((manifestConfig.columnsBySheet || {})[interpostName] || {})
         };
+        // Deteta Video1/Video2 no cabeçalho da folha. Isto corrige folhas em que os vídeos mudaram de J/K para L/M (ou vice-versa).
+        applyDetectedVideoColumns(worksheet, sheetColumns);
         const imageCells = embeddedImages[actualSheetName] || {};
 
         for (let rowIndex = firstIndex; rowIndex < rows.length; rowIndex++) {
@@ -1165,7 +1198,7 @@ function renderStoreVideos(videos) {
     if (!videos.length) {
         const empty = document.createElement('div');
         empty.className = 'media-empty-state';
-        empty.textContent = 'Não há vídeos indicados nas colunas J e K para esta loja.';
+        empty.textContent = 'Não foram encontrados links nas colunas identificadas como Video1 e Video2 (por defeito, J e K).';
         grid.appendChild(empty);
         return;
     }
@@ -1179,11 +1212,12 @@ function renderStoreVideos(videos) {
         media.className = 'video-media';
         const youtube = getYouTubeEmbed(url);
         const vimeo = getVimeoEmbed(url);
+        const googleDrive = getGoogleDriveEmbed(url);
 
-        if (youtube || vimeo) {
+        if (youtube || vimeo || googleDrive) {
             const frame = document.createElement('iframe');
             frame.className = 'video-player';
-            frame.src = youtube || vimeo;
+            frame.src = youtube || vimeo || googleDrive;
             frame.title = 'Vídeo ' + (index + 1) + ' da loja ' + selectedStore.name;
             frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
             frame.allowFullscreen = true;
@@ -1227,6 +1261,20 @@ function getYouTubeEmbed(value) {
             if (!id && parts.length >= 2 && ['embed', 'shorts', 'live'].includes(parts[0])) id = parts[1];
         }
         return id ? 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) : '';
+    } catch (error) {
+        return '';
+    }
+}
+
+function getGoogleDriveEmbed(value) {
+    try {
+        const url = new URL(value);
+        if (!/(^|\.)drive\.google\.com$/i.test(url.hostname)) return '';
+        let id = '';
+        const filePath = url.pathname.match(/\/file\/d\/([^/]+)/i);
+        if (filePath) id = filePath[1];
+        if (!id) id = url.searchParams.get('id') || '';
+        return id ? 'https://drive.google.com/file/d/' + encodeURIComponent(id) + '/preview' : '';
     } catch (error) {
         return '';
     }
