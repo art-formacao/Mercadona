@@ -1,0 +1,7 @@
+Coloque aqui as fotografias das lojas.
+
+Exemplo para a loja 7009:
+- 7009.1.jpg (primeira fotografia)
+- 7009.2.jpg (segunda fotografia)
+
+São aceites .jpg, .jpeg, .png, .webp, .gif e .avif, inclusive variantes em maiúsculas.

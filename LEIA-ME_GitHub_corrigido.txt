@@ -1,0 +1,42 @@
+# Aplicação Mercadona / TJA — corrigida para o Excel atual
+
+## Ficheiros na raiz do GitHub Pages
+- `index.html` — aplicação
+- `manifest.json` — configuração do Excel
+- `Dados.xlsx` — livro Excel
+
+Os nomes no repositório devem respeitar maiúsculas/minúsculas. A aplicação carrega estes ficheiros automaticamente; não tem botão de seleção manual.
+
+## Nomes reais das folhas
+No ficheiro atual, as folhas chamam-se `Almerim` e `Póvoa do Varzim`. Na aplicação, os nomes apresentados continuam a ser `Almeirim` e `Póvoa de Varzim`.
+
+## Colunas
+Na folha `Almerim`:
+A número; B nome; C localidade; D morada; E coordenadas GPS; F link de ponto de espera; G link da loja; H notas; I contacto; J/K fotografias; L/M vídeos.
+
+Na folha `Póvoa do Varzim`, o livro atual tem uma estrutura diferente:
+A número; B nome; C localidade; D morada; E coordenadas; F ponto de espera; G percurso; H contacto; I/J fotografias; K/L vídeos. Esta folha não tem uma coluna de notas; por isso, a aplicação não trata o contacto como se fossem notas.
+
+## Fotografias em células do Excel
+A aplicação inclui agora a leitura das imagens incorporadas diretamente nas células (função “imagem na célula” do Excel). Também aceita URLs/caminhos e hiperligações nas colunas multimédia.
+A extração das imagens incorporadas depende da biblioteca JSZip carregada por CDN; a aplicação requer ligação à Internet.
+
+
+## Fotografias dos perfis
+As fotos do perfil já não são lidas das colunas J e K do Excel. São procuradas automaticamente na pasta `Fotos`, pelo número da loja:
+- loja 7009: `Fotos/7009.1.jpg` (primeira foto) e `Fotos/7009.2.jpg` (segunda foto)
+- são aceites ficheiros sem extensão ou extensões comuns: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.avif` (também algumas variantes em maiúsculas)
+- se usares outra extensão, acrescenta-a à lista `photoExtensions` em `manifest.json`
+As imagens aparecem com setas e também podes deslizar no ecrã do telemóvel.
+
+
+## Fotografias na pasta `Fotos`
+
+As fotografias do perfil são procuradas pela aplicação diretamente na pasta `Fotos`, usando o número da loja:
+
+- `Fotos/7009.1.jpg` — primeira fotografia da loja 7009
+- `Fotos/7009.2.jpg` — segunda fotografia da loja 7009
+
+São aceites nomes sem extensão ou extensões comuns: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.avif` (incluindo algumas variantes em maiúsculas). A ordem `.1` e `.2` define a ordem da galeria. A aplicação procura as fotos quando o perfil da loja é aberto, para não atrasar a carga de todas as lojas.
+
+Coloca a pasta `Fotos` ao mesmo nível de `index.html`, `manifest.json` e `Dados.xlsx` no repositório GitHub. Se a pasta tiver outro nome, altera `photoFolder` no `manifest.json`.
