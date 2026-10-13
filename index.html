@@ -1371,6 +1371,43 @@ function getCurrentInterpostStores() {
     return stores.filter(store => normalizeKey(store.interpost) === normalizeKey(selectedInterpost));
 }
 
+
+const INTERPOST_DESTINATIONS = {
+    "povoa de varzim": {
+        label: "Póvoa de Varzim",
+        latitude: 41.45236384214359,
+        longitude: -8.725253474179025
+    },
+    "almeirim": {
+        label: "Almeirim",
+        latitude: 39.166488853671446,
+        longitude: -8.613300061408985
+    }
+};
+
+function navigateInterpost(interpostName, appType) {
+    const key = normalizeKey(interpostName);
+    const destination = INTERPOST_DESTINATIONS[key];
+    if (!destination) {
+        console.error("Interposto sem coordenadas configuradas:", interpostName);
+        return;
+    }
+
+    const coordinates = destination.latitude + "," + destination.longitude;
+    let url = "";
+
+    if (appType === "waze") {
+        url = "https://waze.com/ul?ll=" + encodeURIComponent(coordinates) + "&navigate=yes";
+    } else {
+        url = "https://www.google.com/maps/dir/?api=1&destination="
+            + encodeURIComponent(coordinates)
+            + "&travelmode=driving";
+    }
+
+    // Called directly from the corresponding button, so mobile browsers can open the navigation app.
+    window.open(url, "_blank", "noopener,noreferrer");
+}
+
 function selectInterpost(name) {
     selectedInterpost = name;
     document.getElementById('storesTitle').textContent = 'Lojas — ' + name;
