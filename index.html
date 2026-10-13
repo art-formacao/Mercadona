@@ -389,6 +389,130 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
  .warning-cancel-button,.warning-ok-button{flex:1}
 }
 
+
+/* Galeria: setas discretas e visualizador de fotografia em ecrã inteiro */
+.photo-arrow{
+    top:50%;
+    display:grid;
+    place-items:center;
+    width:34px;
+    height:34px;
+    margin-top:0;
+    transform:translateY(-50%);
+    padding:0;
+    border:1px solid rgba(255,255,255,.56);
+    border-radius:50%;
+    background:rgba(250,248,242,.64);
+    color:#245d45;
+    box-shadow:0 2px 8px rgba(25,35,28,.10);
+    backdrop-filter:blur(5px);
+    -webkit-backdrop-filter:blur(5px);
+    opacity:.82;
+}
+.photo-arrow:hover,.photo-arrow:focus-visible{background:rgba(255,253,248,.92);opacity:1}
+.photo-arrow svg{display:block;width:15px;height:15px;stroke:currentColor;stroke-width:2.1;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.photo-prev{left:10px}.photo-next{right:10px}
+.store-photo-image{cursor:zoom-in;-webkit-user-drag:none}
+.photo-viewer[hidden]{display:none!important}
+.photo-viewer{
+    position:fixed;
+    inset:0;
+    z-index:2000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    background:#080b09;
+    color:#fff;
+    touch-action:none;
+    overscroll-behavior:contain;
+}
+.photo-viewer-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.96)}
+.photo-viewer-stage{
+    position:absolute;
+    inset:0;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    touch-action:none;
+}
+.photo-viewer-image{
+    display:block;
+    max-width:100vw;
+    max-height:100vh;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    object-position:center;
+    user-select:none;
+    -webkit-user-select:none;
+    -webkit-user-drag:none;
+    transform-origin:center center;
+    will-change:transform;
+    touch-action:none;
+}
+.photo-viewer-close{
+    position:absolute;
+    top:max(16px,env(safe-area-inset-top));
+    right:max(16px,env(safe-area-inset-right));
+    z-index:5;
+    display:grid;
+    place-items:center;
+    width:43px;
+    height:43px;
+    padding:0 0 2px;
+    border:1px solid rgba(255,255,255,.32);
+    border-radius:50%;
+    background:rgba(31,37,33,.72);
+    color:white;
+    font-family:Arial,sans-serif;
+    font-size:30px;
+    line-height:1;
+    box-shadow:0 3px 16px rgba(0,0,0,.22);
+    backdrop-filter:blur(8px);
+}
+.photo-viewer-close:hover{background:rgba(72,81,74,.92)}
+.photo-viewer-arrow{
+    position:absolute;
+    z-index:4;
+    top:50%;
+    display:grid;
+    place-items:center;
+    width:42px;
+    height:42px;
+    padding:0 0 2px;
+    transform:translateY(-50%);
+    border:1px solid rgba(255,255,255,.3);
+    border-radius:50%;
+    background:rgba(31,37,33,.62);
+    color:white;
+    font-size:28px;
+    line-height:1;
+    backdrop-filter:blur(8px);
+}
+.photo-viewer-arrow:hover{background:rgba(69,78,71,.9)}
+.photo-viewer-prev{left:max(15px,env(safe-area-inset-left))}
+.photo-viewer-next{right:max(15px,env(safe-area-inset-right))}
+.photo-viewer-counter{
+    position:absolute;z-index:5;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
+    padding:7px 11px;border:1px solid rgba(255,255,255,.22);border-radius:999px;
+    background:rgba(31,37,33,.72);color:white;font-size:12px;font-weight:750;
+}
+.photo-viewer-hint{
+    position:absolute;z-index:5;left:50%;bottom:max(58px,calc(env(safe-area-inset-bottom) + 42px));transform:translateX(-50%);
+    max-width:85vw;text-align:center;color:rgba(255,255,255,.77);font-size:12px;white-space:nowrap;
+    pointer-events:none;text-shadow:0 1px 4px rgba(0,0,0,.7);
+}
+@media(max-width:600px){
+    .photo-viewer-close{width:40px;height:40px;font-size:28px}
+    .photo-viewer-arrow{width:36px;height:36px;font-size:24px}
+    .photo-viewer-prev{left:max(8px,env(safe-area-inset-left))}
+    .photo-viewer-next{right:max(8px,env(safe-area-inset-right))}
+    .photo-viewer-image{max-width:100vw;max-height:100dvh;height:100dvh}
+}
+
 </style>
 
 </head>
@@ -482,11 +606,23 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
                                 <strong id="photoPlaceholderTitle">Fotografia da loja</strong>
                                 <span id="photoPlaceholderDescription">A fotografia será carregada a partir da pasta Fotos.</span>
                             </div>
-                            <img id="storePhoto" class="store-photo-image" alt="Fotografia da loja" hidden>
-                            <button id="photoPrev" class="photo-arrow photo-prev" type="button" aria-label="Fotografia anterior" onclick="changeStorePhoto(-1)" hidden>‹</button>
-                            <button id="photoNext" class="photo-arrow photo-next" type="button" aria-label="Fotografia seguinte" onclick="changeStorePhoto(1)" hidden>›</button>
+                            <img id="storePhoto" class="store-photo-image" alt="Abrir fotografia em ecrã inteiro" title="Toque para ampliar" draggable="false" hidden>
+                            <button id="photoPrev" class="photo-arrow photo-prev" type="button" aria-label="Fotografia anterior" onclick="changeStorePhoto(-1)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6"/></svg></button>
+                            <button id="photoNext" class="photo-arrow photo-next" type="button" aria-label="Fotografia seguinte" onclick="changeStorePhoto(1)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
                             <span id="photoCounter" class="photo-counter" hidden></span>
                         </div>
+                    </div>
+
+                    <div id="photoViewer" class="photo-viewer" hidden role="dialog" aria-modal="true" aria-label="Fotografia da loja em ecrã inteiro" onclick="handlePhotoViewerBackdrop(event)">
+                        <div class="photo-viewer-backdrop"></div>
+                        <button class="photo-viewer-close" type="button" aria-label="Fechar fotografia" onclick="closePhotoViewer(event)">×</button>
+                        <button class="photo-viewer-arrow photo-viewer-prev" type="button" aria-label="Fotografia anterior" onclick="changeViewerPhoto(-1, event)">‹</button>
+                        <div id="photoViewerStage" class="photo-viewer-stage">
+                            <img id="photoViewerImage" class="photo-viewer-image" alt="Fotografia ampliada" draggable="false">
+                        </div>
+                        <button class="photo-viewer-arrow photo-viewer-next" type="button" aria-label="Fotografia seguinte" onclick="changeViewerPhoto(1, event)">›</button>
+                        <span id="photoViewerCounter" class="photo-viewer-counter"></span>
+                        <span class="photo-viewer-hint">Afaste dois dedos para ampliar</span>
                     </div>
 
                     <div class="store-location-panel">
@@ -1269,6 +1405,16 @@ function showStorePhoto() {
         placeholder.hidden = true;
     };
     image.src = storePhotos[currentPhotoIndex];
+
+    const viewer = document.getElementById('photoViewer');
+    const viewerImage = document.getElementById('photoViewerImage');
+    if (viewer && !viewer.hidden && viewerImage) {
+        viewerImage.src = image.src;
+        viewerImage.alt = image.alt;
+        resetPhotoViewerZoom();
+        updatePhotoViewerCounter();
+    }
+
     prev.hidden = storePhotos.length < 2;
     next.hidden = storePhotos.length < 2;
     counter.hidden = storePhotos.length < 2;
@@ -1496,20 +1642,230 @@ function navigate(type) {
     openNavigation('store', type);
 }
 
+
+let viewerZoom = 1;
+let viewerPanX = 0;
+let viewerPanY = 0;
+let viewerPinchStartDistance = 0;
+let viewerPinchStartScale = 1;
+let viewerLastMidpoint = null;
+let viewerLastTouch = null;
+let viewerSuppressClickUntil = 0;
+
+function getTouchDistance(a, b) {
+    const dx = b.clientX - a.clientX;
+    const dy = b.clientY - a.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function getTouchMidpoint(a, b) {
+    return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
+}
+
+function updatePhotoViewerCounter() {
+    const counter = document.getElementById('photoViewerCounter');
+    if (!counter) return;
+    counter.textContent = storePhotos.length > 1
+        ? (currentPhotoIndex + 1) + ' / ' + storePhotos.length
+        : '';
+    counter.hidden = storePhotos.length < 2;
+    const arrows = document.querySelectorAll('.photo-viewer-arrow');
+    arrows.forEach(button => { button.hidden = storePhotos.length < 2; });
+}
+
+function applyPhotoViewerTransform() {
+    const image = document.getElementById('photoViewerImage');
+    if (!image) return;
+    if (viewerZoom <= 1) {
+        viewerZoom = 1;
+        viewerPanX = 0;
+        viewerPanY = 0;
+    }
+    image.style.transform = 'translate3d(' + viewerPanX + 'px,' + viewerPanY + 'px,0) scale(' + viewerZoom + ')';
+}
+
+function resetPhotoViewerZoom() {
+    viewerZoom = 1;
+    viewerPanX = 0;
+    viewerPanY = 0;
+    viewerPinchStartDistance = 0;
+    viewerPinchStartScale = 1;
+    viewerLastMidpoint = null;
+    viewerLastTouch = null;
+    applyPhotoViewerTransform();
+}
+
+function openPhotoViewer() {
+    if (!storePhotos.length || !selectedStore) return;
+    const sourceImage = document.getElementById('storePhoto');
+    if (!sourceImage || sourceImage.hidden || !sourceImage.src) return;
+    const viewer = document.getElementById('photoViewer');
+    const viewerImage = document.getElementById('photoViewerImage');
+    if (!viewer || !viewerImage) return;
+
+    viewerImage.src = sourceImage.src;
+    viewerImage.alt = sourceImage.alt;
+    viewer.hidden = false;
+    document.body.dataset.previousPhotoOverflow = document.body.style.overflow || '';
+    document.body.style.overflow = 'hidden';
+    resetPhotoViewerZoom();
+    updatePhotoViewerCounter();
+}
+
+function closePhotoViewer(event) {
+    if (event) event.stopPropagation();
+    const viewer = document.getElementById('photoViewer');
+    if (viewer) viewer.hidden = true;
+    document.body.style.overflow = document.body.dataset.previousPhotoOverflow || '';
+    delete document.body.dataset.previousPhotoOverflow;
+    resetPhotoViewerZoom();
+}
+
+function handlePhotoViewerBackdrop(event) {
+    if (event.target === event.currentTarget) closePhotoViewer();
+}
+
+function changeViewerPhoto(direction, event) {
+    if (event) event.stopPropagation();
+    if (storePhotos.length < 2) return;
+    currentPhotoIndex = (currentPhotoIndex + direction + storePhotos.length) % storePhotos.length;
+    showStorePhoto();
+    updatePhotoViewerCounter();
+}
+
+function clampViewerPan() {
+    const stage = document.getElementById('photoViewerStage');
+    if (!stage) return;
+    const maxX = Math.max(0, (stage.clientWidth * (viewerZoom - 1)) / 2);
+    const maxY = Math.max(0, (stage.clientHeight * (viewerZoom - 1)) / 2);
+    viewerPanX = Math.max(-maxX, Math.min(maxX, viewerPanX));
+    viewerPanY = Math.max(-maxY, Math.min(maxY, viewerPanY));
+}
+
+function attachPhotoViewerGestures() {
+    const stage = document.getElementById('photoViewerStage');
+    const viewerImage = document.getElementById('photoViewerImage');
+    if (!stage || !viewerImage) return;
+
+    stage.addEventListener('touchstart', event => {
+        if (event.touches.length >= 2) {
+            event.preventDefault();
+            viewerPinchStartDistance = getTouchDistance(event.touches[0], event.touches[1]);
+            viewerPinchStartScale = viewerZoom;
+            viewerLastMidpoint = getTouchMidpoint(event.touches[0], event.touches[1]);
+            viewerLastTouch = null;
+        } else if (event.touches.length === 1) {
+            viewerLastTouch = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+            viewerLastMidpoint = null;
+        }
+    }, { passive: false });
+
+    stage.addEventListener('touchmove', event => {
+        if (event.touches.length >= 2) {
+            event.preventDefault();
+            const distance = getTouchDistance(event.touches[0], event.touches[1]);
+            const midpoint = getTouchMidpoint(event.touches[0], event.touches[1]);
+            if (viewerPinchStartDistance > 0) {
+                viewerZoom = Math.max(1, Math.min(5, viewerPinchStartScale * distance / viewerPinchStartDistance));
+            }
+            if (viewerLastMidpoint) {
+                viewerPanX += midpoint.x - viewerLastMidpoint.x;
+                viewerPanY += midpoint.y - viewerLastMidpoint.y;
+            }
+            viewerLastMidpoint = midpoint;
+            clampViewerPan();
+            applyPhotoViewerTransform();
+        } else if (event.touches.length === 1 && viewerZoom > 1 && viewerLastTouch) {
+            event.preventDefault();
+            const touch = event.touches[0];
+            viewerPanX += touch.clientX - viewerLastTouch.x;
+            viewerPanY += touch.clientY - viewerLastTouch.y;
+            viewerLastTouch = { x: touch.clientX, y: touch.clientY };
+            clampViewerPan();
+            applyPhotoViewerTransform();
+        }
+    }, { passive: false });
+
+    stage.addEventListener('touchend', event => {
+        if (event.touches.length < 2) {
+            viewerPinchStartDistance = 0;
+            viewerPinchStartScale = viewerZoom;
+            viewerLastMidpoint = null;
+        }
+        if (event.touches.length === 0) viewerLastTouch = null;
+        if (viewerZoom <= 1) resetPhotoViewerZoom();
+    }, { passive: true });
+
+    stage.addEventListener('wheel', event => {
+        event.preventDefault();
+        viewerZoom = Math.max(1, Math.min(5, viewerZoom + (event.deltaY < 0 ? 0.25 : -0.25)));
+        clampViewerPan();
+        applyPhotoViewerTransform();
+    }, { passive: false });
+}
+
 function attachPhotoSwipe() {
     const stage = document.getElementById('storePhotoStage');
+    const photo = document.getElementById('storePhoto');
     if (!stage) return;
     let startX = null;
+    let startY = null;
+    let moved = false;
+    let multiTouch = false;
+
     stage.addEventListener('touchstart', event => {
-        if (event.changedTouches && event.changedTouches.length) startX = event.changedTouches[0].clientX;
+        moved = false;
+        multiTouch = event.touches.length > 1;
+        if (event.touches.length === 1) {
+            startX = event.touches[0].clientX;
+            startY = event.touches[0].clientY;
+        } else {
+            startX = null;
+            startY = null;
+        }
     }, { passive: true });
+
+    stage.addEventListener('touchmove', event => {
+        if (event.touches.length > 1) {
+            multiTouch = true;
+            moved = true;
+            startX = null;
+            return;
+        }
+        if (startX !== null && event.touches.length === 1) {
+            const dx = event.touches[0].clientX - startX;
+            const dy = event.touches[0].clientY - startY;
+            if (Math.abs(dx) > 8 || Math.abs(dy) > 8) moved = true;
+        }
+    }, { passive: true });
+
     stage.addEventListener('touchend', event => {
-        if (startX === null || !event.changedTouches || !event.changedTouches.length) return;
-        const endX = event.changedTouches[0].clientX;
-        const delta = endX - startX;
-        if (Math.abs(delta) > 45) changeStorePhoto(delta < 0 ? 1 : -1);
+        if (!multiTouch && startX !== null && event.changedTouches && event.changedTouches.length) {
+            const dx = event.changedTouches[0].clientX - startX;
+            if (Math.abs(dx) > 45) {
+                changeStorePhoto(dx < 0 ? 1 : -1);
+                viewerSuppressClickUntil = Date.now() + 550;
+            }
+        } else if (moved) {
+            viewerSuppressClickUntil = Date.now() + 550;
+        }
         startX = null;
+        startY = null;
+        moved = false;
+        multiTouch = false;
     }, { passive: true });
+
+    if (photo) {
+        photo.addEventListener('click', event => {
+            if (Date.now() < viewerSuppressClickUntil) {
+                event.preventDefault();
+                return;
+            }
+            openPhotoViewer();
+        });
+    }
+
+    attachPhotoViewerGestures();
 }
 
 function showDataLoadFailure(error) {
@@ -1533,6 +1889,14 @@ function goBack() {
         currentPage = 'home';
     }
 }
+
+document.addEventListener('keydown', event => {
+    const viewer = document.getElementById('photoViewer');
+    if (!viewer || viewer.hidden) return;
+    if (event.key === 'Escape') closePhotoViewer();
+    if (event.key === 'ArrowLeft') changeViewerPhoto(-1);
+    if (event.key === 'ArrowRight') changeViewerPhoto(1);
+});
 
 attachPhotoSwipe();
 loadConfiguredWorkbook();
