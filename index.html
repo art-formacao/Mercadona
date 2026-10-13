@@ -633,6 +633,30 @@ html,body{background:#faf6ee}
 }
 
 
+/* Menu anterior visível por trás da página durante o swipe de regresso */
+.edge-back-preview{
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    overflow:hidden;
+    pointer-events:none;
+    background:#faf6ee;
+    contain:layout paint;
+}
+.edge-back-preview>.page{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    min-height:100%;
+    max-width:none;
+    margin:0;
+    overflow:hidden;
+}
+.edge-back-preview #app{width:100%;}
+.edge-back-preview .home{width:100%;}
+
+
 /* Ecrã inicial compacto: assinatura visível de imediato no telemóvel */
 .page{
     min-height:100vh;
@@ -2397,6 +2421,9 @@ function attachEdgeSwipeBack() {
     let cancelled = false;
     let horizontal = false;
     let appElement = null;
+    let previewElement = null;
+    let originalAppPosition = '';
+    let originalAppZIndex = '';
     const edgeWidth = 24;
     const finishDistance = 76;
     const maxDrag = () => Math.max(1, window.innerWidth);
@@ -2408,18 +2435,76 @@ function attachEdgeSwipeBack() {
         ));
     }
 
+    function removePreview(node = previewElement) {
+        if (node && node.parentNode) node.parentNode.removeChild(node);
+        if (previewElement === node) previewElement = null;
+    }
+
+    function makeBackPreview() {
+        const originalPage = document.querySelector('.page');
+        if (!originalPage) return null;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'edge-back-preview';
+        wrapper.setAttribute('aria-hidden', 'true');
+        wrapper.inert = true;
+
+        const pageCopy = originalPage.cloneNode(true);
+        pageCopy.classList.add('edge-back-preview-page');
+
+        const homeCopy = pageCopy.querySelector('#home');
+        const appCopy = pageCopy.querySelector('#app');
+        const interpostsCopy = pageCopy.querySelector('#interpostsPage');
+        const storesCopy = pageCopy.querySelector('#storesPage');
+        const profileCopy = pageCopy.querySelector('#profilePage');
+
+        // O gesto a partir do menu de interpostos regressa ao ecrã inicial.
+        if (currentPage === 'interposts') {
+            if (homeCopy) homeCopy.style.display = 'flex';
+            if (appCopy) appCopy.style.display = 'none';
+        } else {
+            if (homeCopy) homeCopy.style.display = 'none';
+            if (appCopy) appCopy.style.display = 'block';
+            if (interpostsCopy) interpostsCopy.style.display = currentPage === 'stores' ? 'block' : 'none';
+            if (storesCopy) storesCopy.style.display = currentPage === 'profile' ? 'block' : 'none';
+            if (profileCopy) profileCopy.style.display = 'none';
+        }
+
+        wrapper.appendChild(pageCopy);
+        document.body.appendChild(wrapper);
+        return wrapper;
+    }
+
+    function restoreAppLayer(node) {
+        if (!node) return;
+        node.style.position = originalAppPosition;
+        node.style.zIndex = originalAppZIndex;
+    }
+
     function clearMotion() {
-        if (!appElement) return;
-        appElement.classList.remove('edge-back-dragging', 'edge-back-finishing');
-        appElement.style.transform = '';
-        appElement.style.opacity = '';
-        appElement.style.boxShadow = '';
+        if (!appElement) {
+            removePreview();
+            return;
+        }
+        const node = appElement;
+        node.classList.remove('edge-back-dragging', 'edge-back-finishing');
+        node.style.transform = '';
+        node.style.opacity = '';
+        node.style.boxShadow = '';
+        restoreAppLayer(node);
         appElement = null;
+        removePreview();
     }
 
     function springBack() {
-        if (!appElement) return;
+        if (!appElement) {
+            removePreview();
+            return;
+        }
         const node = appElement;
+        const preview = previewElement;
+        appElement = null;
+        previewElement = null;
         node.classList.remove('edge-back-dragging');
         node.classList.add('edge-back-finishing');
         node.style.transform = 'translate3d(0,0,0)';
@@ -2429,7 +2514,8 @@ function attachEdgeSwipeBack() {
             node.style.transform = '';
             node.style.opacity = '';
             node.style.boxShadow = '';
-            if (appElement === node) appElement = null;
+            restoreAppLayer(node);
+            if (preview && preview.parentNode) preview.parentNode.removeChild(preview);
         }, 230);
     }
 
@@ -2455,6 +2541,14 @@ function attachEdgeSwipeBack() {
             return;
         }
 
+        // Criar a página anterior antes de o ecrã atual começar a deslocar-se.
+        removePreview();
+        previewElement = makeBackPreview();
+        originalAppPosition = appElement.style.position;
+        originalAppZIndex = appElement.style.zIndex;
+        appElement.style.position = 'relative';
+        appElement.style.zIndex = '1001';
+
         startX = touch.clientX;
         startY = touch.clientY;
         active = true;
@@ -2475,7 +2569,7 @@ function attachEdgeSwipeBack() {
         const dx = touch.clientX - startX;
         const dy = touch.clientY - startY;
 
-        // Cancel the back gesture when the user is scrolling vertically.
+        // Cancelar o gesto de regresso se o utilizador estiver a deslocar a página verticalmente.
         if (!horizontal && Math.abs(dy) > 18 && Math.abs(dy) > Math.abs(dx) * 1.15) {
             cancelled = true;
             springBack();
@@ -2486,7 +2580,7 @@ function attachEdgeSwipeBack() {
         if (!horizontal && dx > 5 && dx > Math.abs(dy) * 1.05) horizontal = true;
         if (!horizontal || cancelled) return;
 
-        // Let the whole active app shell follow the finger, making the back gesture obvious.
+        // A página atual move-se por cima do menu anterior, que fica visível desde o início.
         const offset = Math.max(0, Math.min(dx, maxDrag()));
         appElement.style.transform = 'translate3d(' + offset + 'px,0,0)';
         appElement.style.opacity = String(1 - Math.min(offset / maxDrag(), .12));
@@ -2506,19 +2600,23 @@ function attachEdgeSwipeBack() {
 
         if (horizontal && dx >= finishDistance && Math.abs(dy) <= 70 && currentPage !== 'home' && appElement) {
             const node = appElement;
+            const preview = previewElement;
+            appElement = null;
+            previewElement = null;
             node.classList.remove('edge-back-dragging');
             node.classList.add('edge-back-finishing');
             node.style.transform = 'translate3d(' + (window.innerWidth + 28) + 'px,0,0)';
             node.style.opacity = '.86';
 
-            // Let the current screen visibly leave to the right before revealing the previous menu.
+            // Manter a pré-visualização até o menu anterior estar ativo, evitando um flash branco.
             window.setTimeout(() => {
                 node.classList.remove('edge-back-finishing');
                 node.style.transform = '';
                 node.style.opacity = '';
                 node.style.boxShadow = '';
-                if (appElement === node) appElement = null;
+                restoreAppLayer(node);
                 goBack();
+                if (preview && preview.parentNode) preview.parentNode.removeChild(preview);
             }, 210);
         } else {
             springBack();
