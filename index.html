@@ -2,18 +2,18 @@
 <html lang="pt-PT">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Serviço Mercadona</title>
 <link rel="manifest" href="./site.webmanifest">
 <link rel="icon" href="./favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
-<meta name="theme-color" content="#176344">
+<meta name="theme-color" content="#faf6ee">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Serviço Mercadona">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <style>
 :root{--green:#176344;--green-dark:#104b34;--ink:#202923;--muted:#66736b;--surface:#fffaf2;--page:#eee8dc;--line:rgba(40,55,44,.13);--blue:#315d78;--sand:#e4d4b8;--gold:#b58a4b}
@@ -604,6 +604,19 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
 .page{display:flex;flex-direction:column;min-height:100vh}
 .page>#app{flex:1 0 auto;width:100%}
 .page>.home{flex:1 0 auto;min-height:calc(100vh - 46px)}
+
+
+/* iPhone/PWA: estender a cor do cabeçalho por trás da barra de estado superior */
+html,body{background:#faf6ee}
+.topbar{
+    background:#faf6ee;
+    padding-top:calc(14px + env(safe-area-inset-top, 0px));
+    padding-top:calc(14px + constant(safe-area-inset-top));
+    padding-top:calc(14px + env(safe-area-inset-top, 0px));
+}
+@supports (padding-top: env(safe-area-inset-top)){
+    .topbar{padding-top:calc(14px + env(safe-area-inset-top))}
+}
 
 </style>
 
