@@ -577,6 +577,34 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
     .profile-route-context{margin-bottom:9px;font-size:11px;padding:6px 9px}
 }
 
+
+/* Deslize interativo: a fotografia seguinte acompanha o dedo */
+.store-photo-gallery{touch-action:pan-y;overflow:hidden}
+.store-photo-image{z-index:1;will-change:transform;transition:transform .22s ease}
+.store-photo-slide-image{
+    position:absolute;inset:0;z-index:2;display:block;width:100%;height:100%;
+    object-fit:cover;pointer-events:none;will-change:transform;
+}
+.store-photo-slide-image[hidden]{display:none!important}
+.store-photo-image[hidden]{display:none!important}
+.app-signature{
+    display:flex;align-items:center;justify-content:center;min-height:46px;
+    padding:11px 18px;text-align:center;
+    border-top:1px solid rgba(143,125,94,.15);
+    background:rgba(243,238,229,.9);color:#7c806f;
+    font-size:11px;font-weight:650;letter-spacing:.035em;line-height:1.4;
+}
+@media(max-width:600px){
+    .app-signature{min-height:44px;padding:10px 14px;font-size:10px}
+}
+.home{min-height:calc(100vh - 46px)}
+
+
+/* Rodapé global comum a todos os ecrãs da aplicação */
+.page{display:flex;flex-direction:column;min-height:100vh}
+.page>#app{flex:1 0 auto;width:100%}
+.page>.home{flex:1 0 auto;min-height:calc(100vh - 46px)}
+
 </style>
 
 </head>
@@ -672,6 +700,7 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
                                 <span id="photoPlaceholderDescription">A fotografia será carregada a partir da pasta Fotos.</span>
                             </div>
                             <img id="storePhoto" class="store-photo-image" alt="Abrir fotografia em ecrã inteiro" title="Toque para ampliar" draggable="false" hidden>
+                            <img id="storePhotoIncoming" class="store-photo-slide-image" alt="" aria-hidden="true" draggable="false" hidden>
                             <button id="photoPrev" class="photo-arrow photo-prev" type="button" aria-label="Fotografia anterior" onclick="changeStorePhoto(-1)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6"/></svg></button>
                             <button id="photoNext" class="photo-arrow photo-next" type="button" aria-label="Fotografia seguinte" onclick="changeStorePhoto(1)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
                             <span id="photoCounter" class="photo-counter" hidden></span>
@@ -787,6 +816,7 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
             </section>
         </main>
     </div>
+    <footer class="app-signature">Desenvolvido pelo Dep. Formação 2026</footer>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1461,9 +1491,20 @@ function showStorePhoto() {
     if (!storePhotos.length) return;
     const placeholder = document.getElementById('storePhotoPlaceholder');
     const image = document.getElementById('storePhoto');
+    const incoming = document.getElementById('storePhotoIncoming');
     const prev = document.getElementById('photoPrev');
     const next = document.getElementById('photoNext');
     const counter = document.getElementById('photoCounter');
+
+    // Limpa quaisquer transformações deixadas pelo gesto de deslizar.
+    image.style.transition = '';
+    image.style.transform = '';
+    if (incoming) {
+        incoming.hidden = true;
+        incoming.style.transition = '';
+        incoming.style.transform = '';
+        incoming.removeAttribute('src');
+    }
 
     placeholder.hidden = true;
     image.hidden = false;
@@ -1967,18 +2008,66 @@ function attachPhotoViewerGestures() {
 function attachPhotoSwipe() {
     const stage = document.getElementById('storePhotoStage');
     const photo = document.getElementById('storePhoto');
-    if (!stage) return;
+    const incoming = document.getElementById('storePhotoIncoming');
+    if (!stage || !photo || !incoming) return;
+
     let startX = null;
     let startY = null;
-    let moved = false;
+    let deltaX = 0;
+    let horizontalSwipe = false;
     let multiTouch = false;
+    let incomingIndex = -1;
+    let finishingSwipe = false;
+
+    const width = () => Math.max(1, stage.clientWidth);
+
+    function prepareIncoming(direction, dx) {
+        if (storePhotos.length < 2) return;
+        const targetIndex = (currentPhotoIndex + direction + storePhotos.length) % storePhotos.length;
+
+        if (incomingIndex !== targetIndex) {
+            incomingIndex = targetIndex;
+            incoming.style.transition = 'none';
+            incoming.src = storePhotos[targetIndex];
+        }
+        incoming.hidden = false;
+        incoming.style.transform = 'translate3d(' + ((direction === 1 ? width() : -width()) + dx) + 'px,0,0)';
+    }
+
+    function resetSwipeLayers(animate = true) {
+        const duration = animate ? '220ms ease' : 'none';
+        photo.style.transition = duration === 'none' ? 'none' : 'transform ' + duration;
+        incoming.style.transition = duration === 'none' ? 'none' : 'transform ' + duration;
+        photo.style.transform = 'translate3d(0,0,0)';
+        if (incomingIndex !== -1) {
+            const dir = incomingIndex === (currentPhotoIndex + 1) % storePhotos.length ? 1 : -1;
+            incoming.style.transform = 'translate3d(' + (dir * width()) + 'px,0,0)';
+        }
+        window.setTimeout(() => {
+            if (!finishingSwipe) {
+                incoming.hidden = true;
+                incoming.style.transition = '';
+                incoming.style.transform = '';
+                photo.style.transition = '';
+            }
+        }, animate ? 230 : 0);
+    }
 
     stage.addEventListener('touchstart', event => {
-        moved = false;
+        if (finishingSwipe) return;
+        deltaX = 0;
+        horizontalSwipe = false;
         multiTouch = event.touches.length > 1;
+        incomingIndex = -1;
+
         if (event.touches.length === 1) {
             startX = event.touches[0].clientX;
             startY = event.touches[0].clientY;
+            photo.style.transition = 'none';
+            photo.style.transform = 'translate3d(0,0,0)';
+            incoming.hidden = true;
+            incoming.style.transition = 'none';
+            incoming.style.transform = '';
         } else {
             startX = null;
             startY = null;
@@ -1986,38 +2075,82 @@ function attachPhotoSwipe() {
     }, { passive: true });
 
     stage.addEventListener('touchmove', event => {
+        if (finishingSwipe) return;
         if (event.touches.length > 1) {
             multiTouch = true;
-            moved = true;
-            startX = null;
+            horizontalSwipe = false;
+            incoming.hidden = true;
             return;
         }
-        if (startX !== null && event.touches.length === 1) {
-            const dx = event.touches[0].clientX - startX;
-            const dy = event.touches[0].clientY - startY;
-            if (Math.abs(dx) > 8 || Math.abs(dy) > 8) moved = true;
+        if (startX === null || event.touches.length !== 1 || multiTouch || storePhotos.length < 2) return;
+
+        const touch = event.touches[0];
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+
+        // Let vertical movement scroll the page; only animate a clearly horizontal swipe.
+        if (!horizontalSwipe && Math.abs(dx) > 7 && Math.abs(dx) > Math.abs(dy) * 1.12) {
+            horizontalSwipe = true;
         }
+        if (!horizontalSwipe) return;
+
+        deltaX = dx;
+        const direction = dx < 0 ? 1 : -1;
+        prepareIncoming(direction, dx);
+        photo.style.transform = 'translate3d(' + dx + 'px,0,0)';
     }, { passive: true });
 
     stage.addEventListener('touchend', event => {
-        if (!multiTouch && startX !== null && event.changedTouches && event.changedTouches.length) {
-            const dx = event.changedTouches[0].clientX - startX;
-            if (Math.abs(dx) > 45) {
-                changeStorePhoto(dx < 0 ? 1 : -1);
-                viewerSuppressClickUntil = Date.now() + 550;
-            }
-        } else if (moved) {
-            viewerSuppressClickUntil = Date.now() + 550;
+        if (startX === null || multiTouch || finishingSwipe) {
+            startX = null;
+            startY = null;
+            multiTouch = false;
+            return;
         }
+
+        if (horizontalSwipe && Math.abs(deltaX) > 45 && incomingIndex !== -1) {
+            const direction = deltaX < 0 ? 1 : -1;
+            const targetIndex = (currentPhotoIndex + direction + storePhotos.length) % storePhotos.length;
+            finishingSwipe = true;
+            viewerSuppressClickUntil = Date.now() + 650;
+
+            photo.style.transition = 'transform 220ms ease';
+            incoming.style.transition = 'transform 220ms ease';
+            photo.style.transform = 'translate3d(' + (direction === 1 ? -width() : width()) + 'px,0,0)';
+            incoming.style.transform = 'translate3d(0,0,0)';
+
+            window.setTimeout(() => {
+                currentPhotoIndex = targetIndex;
+                finishingSwipe = false;
+                showStorePhoto();
+                incomingIndex = -1;
+            }, 230);
+        } else if (horizontalSwipe) {
+            viewerSuppressClickUntil = Date.now() + 450;
+            resetSwipeLayers(true);
+            incomingIndex = -1;
+        }
+
         startX = null;
         startY = null;
-        moved = false;
+        deltaX = 0;
+        horizontalSwipe = false;
         multiTouch = false;
+    }, { passive: true });
+
+    stage.addEventListener('touchcancel', () => {
+        if (horizontalSwipe && !finishingSwipe) resetSwipeLayers(true);
+        startX = null;
+        startY = null;
+        deltaX = 0;
+        horizontalSwipe = false;
+        multiTouch = false;
+        incomingIndex = -1;
     }, { passive: true });
 
     if (photo) {
         photo.addEventListener('click', event => {
-            if (Date.now() < viewerSuppressClickUntil) {
+            if (Date.now() < viewerSuppressClickUntil || finishingSwipe) {
                 event.preventDefault();
                 return;
             }
