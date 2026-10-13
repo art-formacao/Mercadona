@@ -543,6 +543,40 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
 .video-open-link:focus-visible{outline:3px solid #176344;outline-offset:3px}
 @media(max-width:600px){.video-play-overlay{width:48px;height:48px;font-size:18px}.video-external-indicator{top:9px;right:9px;width:27px;height:27px}}
 
+
+/* Contexto de percurso no cabeçalho do perfil: entreposto de origem → loja */
+.profile-route-context{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    margin:0 0 11px;
+    padding:7px 11px;
+    border:1px solid rgba(23,99,68,.16);
+    border-radius:999px;
+    background:linear-gradient(120deg,#e8f0e4,#f4eddf);
+    color:#176344;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.025em;
+    line-height:1.25;
+}
+.profile-route-context::before{
+    content:"↗";
+    display:inline-grid;
+    place-items:center;
+    width:19px;
+    height:19px;
+    flex:0 0 19px;
+    border-radius:50%;
+    background:#176344;
+    color:#fff;
+    font-size:13px;
+    font-weight:800;
+}
+@media(max-width:600px){
+    .profile-route-context{margin-bottom:9px;font-size:11px;padding:6px 9px}
+}
+
 </style>
 
 </head>
@@ -617,6 +651,7 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
             <section id="profilePage" class="section profile-page" style="display:none;">
                 <div class="store-profile-heading">
                     <div>
+                        <div class="profile-route-context" id="profileRouteContext">De Almeirim para a loja</div>
                         <div class="profile-number" id="profileNumber">LOJA</div>
                         <h1 id="profileName">Perfil da loja</h1>
                         <p class="profile-intro">Informação operacional, acessos e pontos de atenção.</p>
@@ -1329,6 +1364,14 @@ function filterStores() {
 function openStore(id) {
     selectedStore = stores.find(store => store.id === id);
     if (!selectedStore) return;
+
+    const routeContext = document.getElementById('profileRouteContext');
+    const originInterpost = String(selectedStore.interpost || selectedInterpost || '').trim();
+    if (routeContext) {
+        routeContext.textContent = originInterpost
+            ? 'De ' + originInterpost + ' para ' + (selectedStore.name || selectedStore.city || ('loja ' + selectedStore.number))
+            : 'Destino: ' + (selectedStore.name || selectedStore.city || ('loja ' + selectedStore.number));
+    }
 
     document.getElementById('profileNumber').textContent = 'LOJA ' + selectedStore.number;
     document.getElementById('profileName').textContent = selectedStore.name;
