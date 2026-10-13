@@ -618,6 +618,42 @@ html,body{background:#faf6ee}
     .topbar{padding-top:calc(14px + env(safe-area-inset-top))}
 }
 
+
+/* Ecrã inicial: manter a assinatura visível sem scroll desnecessário */
+html,body{min-height:100%;min-height:100svh}
+.page{display:flex;flex-direction:column;min-height:100vh;min-height:100svh}
+.page>.home{
+    flex:1 1 auto;
+    min-height:0;
+    height:auto;
+    min-height:calc(100svh - 46px);
+    padding:clamp(12px,3.2svh,38px) clamp(16px,4vw,30px);
+    gap:clamp(12px,3.3svh,34px);
+    justify-content:space-evenly;
+}
+.home .logos{gap:clamp(12px,3.6svh,30px);width:min(100%,820px)}
+.home .logo-mercadona{max-height:min(25svh,210px);width:min(100%,690px)}
+.home .logo-tja{max-height:min(17svh,125px);width:min(100%,650px)}
+.home .primary-btn{flex:0 0 auto;margin-bottom:0}
+.page>.app-signature{flex:0 0 auto;margin-top:auto}
+@media(max-width:600px){
+    .page>.home{
+        min-height:calc(100svh - 44px);
+        padding:clamp(10px,2.4svh,22px) 18px;
+        gap:clamp(10px,2.5svh,20px);
+    }
+    .home .logos{gap:clamp(10px,2.7svh,22px)}
+    .home .logo-mercadona{max-height:min(23svh,165px)}
+    .home .logo-tja{max-height:min(15svh,95px)}
+    .home .primary-btn{min-width:min(260px,90vw);padding:14px 24px;font-size:15px}
+}
+@media(max-height:700px){
+    .page>.home{padding-top:10px;padding-bottom:10px;gap:10px}
+    .home .logos{gap:10px}
+    .home .logo-mercadona{max-height:20svh}
+    .home .logo-tja{max-height:13svh}
+}
+
 </style>
 
 </head>
@@ -2031,6 +2067,7 @@ function attachPhotoSwipe() {
     let multiTouch = false;
     let incomingIndex = -1;
     let finishingSwipe = false;
+    let gestureWidth = 1;
 
     const width = () => Math.max(1, stage.clientWidth);
 
@@ -2044,17 +2081,16 @@ function attachPhotoSwipe() {
             incoming.src = storePhotos[targetIndex];
         }
         incoming.hidden = false;
-        incoming.style.transform = 'translate3d(' + ((direction === 1 ? width() : -width()) + dx) + 'px,0,0)';
+        incoming.style.transform = 'translate3d(' + ((direction === 1 ? gestureWidth : -gestureWidth) + dx) + 'px,0,0)';
     }
 
     function resetSwipeLayers(animate = true) {
-        const duration = animate ? '220ms ease' : 'none';
-        photo.style.transition = duration === 'none' ? 'none' : 'transform ' + duration;
-        incoming.style.transition = duration === 'none' ? 'none' : 'transform ' + duration;
+        photo.style.transition = animate ? 'transform 220ms ease' : 'none';
+        incoming.style.transition = animate ? 'transform 220ms ease' : 'none';
         photo.style.transform = 'translate3d(0,0,0)';
         if (incomingIndex !== -1) {
-            const dir = incomingIndex === (currentPhotoIndex + 1) % storePhotos.length ? 1 : -1;
-            incoming.style.transform = 'translate3d(' + (dir * width()) + 'px,0,0)';
+            const isNext = incomingIndex === (currentPhotoIndex + 1) % storePhotos.length;
+            incoming.style.transform = 'translate3d(' + (isNext ? gestureWidth : -gestureWidth) + 'px,0,0)';
         }
         window.setTimeout(() => {
             if (!finishingSwipe) {
@@ -2062,8 +2098,61 @@ function attachPhotoSwipe() {
                 incoming.style.transition = '';
                 incoming.style.transform = '';
                 photo.style.transition = '';
+                photo.style.transform = '';
+                incomingIndex = -1;
             }
         }, animate ? 230 : 0);
+    }
+
+    function finishSwipe(direction, targetIndex) {
+        finishingSwipe = true;
+        viewerSuppressClickUntil = Date.now() + 700;
+
+        photo.style.transition = 'transform 220ms ease';
+        incoming.style.transition = 'transform 220ms ease';
+        photo.style.transform = 'translate3d(' + (direction === 1 ? -gestureWidth : gestureWidth) + 'px,0,0)';
+        incoming.style.transform = 'translate3d(0,0,0)';
+
+        window.setTimeout(() => {
+            // Commit the incoming image to the main image layer while it is still visible.
+            // Do not call showStorePhoto here: that routine resets the gallery index/layers.
+            currentPhotoIndex = targetIndex;
+            photo.style.transition = 'none';
+            photo.style.transform = 'translate3d(0,0,0)';
+            photo.alt = 'Fotografia ' + (currentPhotoIndex + 1) + ' da loja ' + (selectedStore ? selectedStore.name : '');
+            photo.src = storePhotos[currentPhotoIndex];
+
+            if (incoming) {
+                incoming.style.transition = 'none';
+                incoming.style.transform = 'translate3d(0,0,0)';
+                incoming.hidden = true;
+                incoming.removeAttribute('src');
+                incoming.style.transform = '';
+                incoming.style.transition = '';
+            }
+
+            const counter = document.getElementById('photoCounter');
+            if (counter) {
+                counter.textContent = (currentPhotoIndex + 1) + ' / ' + storePhotos.length;
+                counter.hidden = storePhotos.length < 2;
+            }
+            const viewer = document.getElementById('photoViewer');
+            const viewerImage = document.getElementById('photoViewerImage');
+            if (viewer && !viewer.hidden && viewerImage) {
+                viewerImage.src = photo.src;
+                viewerImage.alt = photo.alt;
+                resetPhotoViewerZoom();
+                updatePhotoViewerCounter();
+            }
+
+            incomingIndex = -1;
+            finishingSwipe = false;
+            // Restore the CSS transition after browser has committed the new source.
+            requestAnimationFrame(() => {
+                photo.style.transition = '';
+                photo.style.transform = '';
+            });
+        }, 230);
     }
 
     stage.addEventListener('touchstart', event => {
@@ -2072,6 +2161,7 @@ function attachPhotoSwipe() {
         horizontalSwipe = false;
         multiTouch = event.touches.length > 1;
         incomingIndex = -1;
+        gestureWidth = width();
 
         if (event.touches.length === 1) {
             startX = event.touches[0].clientX;
@@ -2081,6 +2171,7 @@ function attachPhotoSwipe() {
             incoming.hidden = true;
             incoming.style.transition = 'none';
             incoming.style.transform = '';
+            incoming.removeAttribute('src');
         } else {
             startX = null;
             startY = null;
@@ -2101,7 +2192,7 @@ function attachPhotoSwipe() {
         const dx = touch.clientX - startX;
         const dy = touch.clientY - startY;
 
-        // Let vertical movement scroll the page; only animate a clearly horizontal swipe.
+        // Permite deslocamento vertical da página; só anima quando o gesto é horizontal.
         if (!horizontalSwipe && Math.abs(dx) > 7 && Math.abs(dx) > Math.abs(dy) * 1.12) {
             horizontalSwipe = true;
         }
@@ -2124,24 +2215,10 @@ function attachPhotoSwipe() {
         if (horizontalSwipe && Math.abs(deltaX) > 45 && incomingIndex !== -1) {
             const direction = deltaX < 0 ? 1 : -1;
             const targetIndex = (currentPhotoIndex + direction + storePhotos.length) % storePhotos.length;
-            finishingSwipe = true;
-            viewerSuppressClickUntil = Date.now() + 650;
-
-            photo.style.transition = 'transform 220ms ease';
-            incoming.style.transition = 'transform 220ms ease';
-            photo.style.transform = 'translate3d(' + (direction === 1 ? -width() : width()) + 'px,0,0)';
-            incoming.style.transform = 'translate3d(0,0,0)';
-
-            window.setTimeout(() => {
-                currentPhotoIndex = targetIndex;
-                finishingSwipe = false;
-                showStorePhoto();
-                incomingIndex = -1;
-            }, 230);
+            finishSwipe(direction, targetIndex);
         } else if (horizontalSwipe) {
-            viewerSuppressClickUntil = Date.now() + 450;
+            viewerSuppressClickUntil = Date.now() + 500;
             resetSwipeLayers(true);
-            incomingIndex = -1;
         }
 
         startX = null;
