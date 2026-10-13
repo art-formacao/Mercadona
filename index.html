@@ -619,17 +619,21 @@ html,body{background:#faf6ee}
 }
 
 
-/* Animação visível ao voltar com o gesto da margem esquerda */
+/* Swipe de regresso: ecrã atual totalmente opaco enquanto desliza */
 #app.edge-back-dragging{
     transition:none!important;
-    will-change:transform,opacity;
+    will-change:transform;
+    opacity:1!important;
+    background-color:#faf6ee;
 }
 #app.edge-back-finishing{
-    transition:transform 210ms cubic-bezier(.22,.72,.22,1),opacity 210ms ease!important;
-    will-change:transform,opacity;
+    transition:transform 210ms cubic-bezier(.22,.72,.22,1)!important;
+    will-change:transform;
+    opacity:1!important;
+    background-color:#faf6ee;
 }
 @media(prefers-reduced-motion:reduce){
-    #app.edge-back-finishing{transition:transform 120ms ease,opacity 120ms ease!important}
+    #app.edge-back-finishing{transition:transform 120ms ease!important}
 }
 
 
@@ -2583,7 +2587,7 @@ function attachEdgeSwipeBack() {
         // A página atual move-se por cima do menu anterior, que fica visível desde o início.
         const offset = Math.max(0, Math.min(dx, maxDrag()));
         appElement.style.transform = 'translate3d(' + offset + 'px,0,0)';
-        appElement.style.opacity = String(1 - Math.min(offset / maxDrag(), .12));
+        appElement.style.opacity = '1';
     }, { passive: true, capture: true });
 
     document.addEventListener('touchend', event => {
@@ -2606,7 +2610,7 @@ function attachEdgeSwipeBack() {
             node.classList.remove('edge-back-dragging');
             node.classList.add('edge-back-finishing');
             node.style.transform = 'translate3d(' + (window.innerWidth + 28) + 'px,0,0)';
-            node.style.opacity = '.86';
+            node.style.opacity = '1';
 
             // Manter a pré-visualização até o menu anterior estar ativo, evitando um flash branco.
             window.setTimeout(() => {
