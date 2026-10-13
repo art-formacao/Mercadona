@@ -519,6 +519,30 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
 .navigation-warning-card .panel-kicker{margin-bottom:12px}
 .navigation-warning-card p strong{font-weight:800;color:var(--ink)}
 
+
+/* Botões discretos para copiar morada e coordenadas GPS */
+.detail-value-with-copy{display:flex;align-items:center;gap:8px;width:100%;min-width:0}
+.detail-value-with-copy strong{flex:1;min-width:0}
+.copy-value-btn{display:inline-grid;place-items:center;flex:0 0 31px;width:31px;height:31px;margin-left:auto;padding:0;border:1px solid rgba(23,99,68,.15);border-radius:9px;background:rgba(255,255,255,.58);color:#176344;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .15s ease}
+.copy-value-btn svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.copy-value-btn:hover,.copy-value-btn:focus-visible{background:#e4eee2;border-color:rgba(23,99,68,.32)}
+.copy-value-btn:active{transform:scale(.95)}
+.copy-value-btn.copied{background:#176344;color:#fff;border-color:#176344}
+@media(max-width:460px){.copy-value-btn{flex-basis:29px;width:29px;height:29px}.detail-value-with-copy{gap:6px}}
+
+
+/* Capas dos vídeos clicáveis: o vídeo abre numa página separada */
+.video-open-link{display:block;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:11px;background:#23392e;text-decoration:none;color:#fff;cursor:pointer}
+.video-poster-fallback{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:flex-start;padding:13px;background:linear-gradient(135deg,#263f32 0%,#61745d 52%,#d0c2a5 100%)}
+.video-poster-fallback:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.42))}
+.video-poster-fallback-label{position:relative;z-index:1;font-size:10px;font-weight:850;letter-spacing:.16em;color:rgba(255,255,255,.88)}
+.video-poster-image{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;display:block;transition:transform .22s ease}
+.video-open-link:hover .video-poster-image{transform:scale(1.025)}
+.video-play-overlay{position:absolute;z-index:2;left:50%;top:50%;display:flex;align-items:center;justify-content:center;width:56px;height:56px;padding:0 0 0 3px;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.76);border-radius:50%;background:rgba(18,23,20,.78);color:#fff;font-size:20px;line-height:1;box-shadow:0 4px 18px rgba(0,0,0,.24);pointer-events:none}
+.video-external-indicator{position:absolute;z-index:2;top:12px;right:12px;display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:rgba(12,18,14,.62);color:#fff;font-size:21px;line-height:1;pointer-events:none}
+.video-open-link:focus-visible{outline:3px solid #176344;outline-offset:3px}
+@media(max-width:600px){.video-play-overlay{width:48px;height:48px;font-size:18px}.video-external-indicator{top:9px;right:9px;width:27px;height:27px}}
+
 </style>
 
 </head>
@@ -637,14 +661,14 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
                             <div class="detail-icon address-icon">⌖</div>
                             <div class="detail-copy">
                                 <span class="detail-label">Morada</span>
-                                <strong id="storeAddress">Morada a configurar</strong>
+                                <div class="detail-value-with-copy"><strong id="storeAddress">Morada a configurar</strong><button class="copy-value-btn" type="button" aria-label="Copiar morada" title="Copiar morada" onclick="copyProfileValue('storeAddress', this)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg></button></div>
                             </div>
                         </div>
                         <div class="detail-row">
                             <div class="detail-icon gps-icon">◎</div>
                             <div class="detail-copy">
                                 <span class="detail-label">Coordenadas GPS</span>
-                                <strong id="storeCoordinates">Coordenadas a configurar</strong>
+                                <div class="detail-value-with-copy"><strong id="storeCoordinates">Coordenadas a configurar</strong><button class="copy-value-btn" type="button" aria-label="Copiar coordenadas GPS" title="Copiar coordenadas GPS" onclick="copyProfileValue('storeCoordinates', this)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg></button></div>
                             </div>
                         </div>
                         <div class="detail-row contact-detail-row">
@@ -1449,42 +1473,49 @@ function renderStoreVideos(videos) {
     }
 
     availableVideos.slice(0, 2).forEach((value, index) => {
+        const url = String(value).trim();
         const card = document.createElement('div');
         card.className = 'video-placeholder';
-        const url = String(value).trim();
 
-        const media = document.createElement('div');
-        media.className = 'video-media';
-        const youtube = getYouTubeEmbed(url);
-        const vimeo = getVimeoEmbed(url);
-        const googleDrive = getGoogleDriveEmbed(url);
+        const media = document.createElement('a');
+        media.className = 'video-media video-open-link';
+        media.href = url;
+        media.target = '_blank';
+        media.rel = 'noopener noreferrer';
+        media.setAttribute('aria-label', 'Abrir vídeo ' + (index + 1) + ' da loja ' + selectedStore.name + ' numa nova página');
+        media.title = 'Abrir vídeo numa nova página';
 
-        if (youtube || vimeo || googleDrive) {
-            const frame = document.createElement('iframe');
-            frame.className = 'video-player';
-            frame.src = youtube || vimeo || googleDrive;
-            frame.title = 'Vídeo ' + (index + 1) + ' da loja ' + selectedStore.name;
-            frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-            frame.allowFullscreen = true;
-            frame.loading = 'lazy';
-            media.appendChild(frame);
-        } else if (/\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(url)) {
-            const video = document.createElement('video');
-            video.className = 'video-player';
-            video.src = url;
-            video.controls = true;
-            video.playsInline = true;
-            video.preload = 'metadata';
-            media.appendChild(video);
-        } else {
-            const link = document.createElement('a');
-            link.className = 'video-link-preview';
-            link.href = url;
-            link.target = '_blank';
-            link.rel = 'noopener';
-            link.innerHTML = '<span class="video-play">▶</span><span>Abrir vídeo</span>';
-            media.appendChild(link);
+        const fallback = document.createElement('div');
+        fallback.className = 'video-poster-fallback';
+        const fallbackText = document.createElement('span');
+        fallbackText.className = 'video-poster-fallback-label';
+        fallbackText.textContent = 'VÍDEO ' + String(index + 1).padStart(2, '0');
+        fallback.appendChild(fallbackText);
+        media.appendChild(fallback);
+
+        const posterUrl = getVideoPosterUrl(url);
+        if (posterUrl) {
+            const poster = document.createElement('img');
+            poster.className = 'video-poster-image';
+            poster.alt = 'Capa do vídeo ' + (index + 1);
+            poster.loading = 'lazy';
+            poster.referrerPolicy = 'no-referrer';
+            poster.src = posterUrl;
+            poster.onerror = () => poster.remove();
+            media.appendChild(poster);
         }
+
+        const play = document.createElement('span');
+        play.className = 'video-play-overlay';
+        play.setAttribute('aria-hidden', 'true');
+        play.textContent = '▶';
+        media.appendChild(play);
+
+        const external = document.createElement('span');
+        external.className = 'video-external-indicator';
+        external.setAttribute('aria-hidden', 'true');
+        external.textContent = '↗';
+        media.appendChild(external);
 
         const heading = document.createElement('strong');
         heading.textContent = 'Vídeo ' + (index + 1);
@@ -1493,6 +1524,41 @@ function renderStoreVideos(videos) {
         card.append(media, heading, description);
         grid.appendChild(card);
     });
+}
+
+function getVideoPosterUrl(value) {
+    try {
+        const url = new URL(value);
+        const host = url.hostname.toLowerCase();
+
+        if (host.includes('youtube.com') || host === 'youtu.be' || host.endsWith('.youtu.be')) {
+            let id = '';
+            if (host.includes('youtu.be')) {
+                id = url.pathname.split('/').filter(Boolean)[0] || '';
+            } else {
+                id = url.searchParams.get('v') || '';
+                const parts = url.pathname.split('/').filter(Boolean);
+                if (!id && parts.length >= 2 && ['embed', 'shorts', 'live'].includes(parts[0])) id = parts[1];
+            }
+            return id ? 'https://i.ytimg.com/vi/' + encodeURIComponent(id) + '/hqdefault.jpg' : '';
+        }
+
+        if (host === 'drive.google.com' || host.endsWith('.drive.google.com')) {
+            const match = url.pathname.match(/\/file\/d\/([^/]+)/i);
+            const id = (match && match[1]) || url.searchParams.get('id') || '';
+            return id ? 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w1200' : '';
+        }
+
+        if (host.includes('vimeo.com')) {
+            const parts = url.pathname.split('/').filter(Boolean);
+            const id = parts.reverse().find(part => /^\d+$/.test(part)) || '';
+            return id ? 'https://vumbnail.com/' + encodeURIComponent(id) + '.jpg' : '';
+        }
+
+        return '';
+    } catch (error) {
+        return '';
+    }
 }
 
 function getYouTubeEmbed(value) {
@@ -1544,6 +1610,51 @@ function renderStoreNotes(notes) {
     const text = String(notes || '').trim();
     noteText.textContent = text || 'Os alertas e cuidados específicos desta loja aparecerão nesta área.';
     noteText.classList.toggle('has-store-note', Boolean(text));
+}
+
+
+async function copyProfileValue(elementId, button) {
+    const target = document.getElementById(elementId);
+    const value = target ? target.textContent.trim() : '';
+    if (!value || /a configurar/i.test(value)) return;
+
+    let copied = false;
+    try {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(value);
+            copied = true;
+        }
+    } catch (error) {
+        copied = false;
+    }
+
+    if (!copied) {
+        const textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        textarea.style.pointerEvents = 'none';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try { copied = document.execCommand('copy'); } catch (error) { copied = false; }
+        textarea.remove();
+    }
+
+    if (copied && button) {
+        const originalTitle = button.title;
+        const originalLabel = button.getAttribute('aria-label') || originalTitle;
+        button.classList.add('copied');
+        button.title = 'Copiado';
+        button.setAttribute('aria-label', 'Copiado');
+        button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>';
+        setTimeout(() => {
+            button.classList.remove('copied');
+            button.title = originalTitle;
+            button.setAttribute('aria-label', originalLabel);
+            button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg>';
+        }, 1400);
+    }
 }
 
 function extractDestinationFromLink(rawLink) {
