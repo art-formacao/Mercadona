@@ -513,6 +513,12 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
     .photo-viewer-image{max-width:100vw;max-height:100dvh;height:100dvh}
 }
 
+
+/* Aviso simplificado conforme pedido */
+.navigation-warning-card h2:empty{display:none}
+.navigation-warning-card .panel-kicker{margin-bottom:12px}
+.navigation-warning-card p strong{font-weight:800;color:var(--ink)}
+
 </style>
 
 </head>
@@ -685,8 +691,8 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
                     <div class="navigation-warning-card">
                         <div class="navigation-warning-icon" aria-hidden="true">!</div>
                         <div class="panel-kicker">AVISO DE NAVEGAÇÃO</div>
-                        <h2 id="navigationWarningTitle">Antes de iniciar a navegação</h2>
-                        <p>Consulte o percurso antes de iniciar a navegação.</p>
+                        
+                        <p><strong>Consulte o percurso antes de iniciar a navegação</strong></p>
                         <div class="navigation-warning-actions">
                             <button type="button" class="warning-cancel-button" onclick="closeNavigationWarning()">Cancelar</button>
                             <button type="button" class="warning-ok-button" onclick="confirmNavigationWarning()">OK</button>
