@@ -729,6 +729,12 @@ html,body{background:#faf6ee}
     .page>.home .primary-btn{min-height:44px;padding:10px 22px}
 }
 
+
+/* Logótipo oficial TJA no cabeçalho, sem alterar a altura da barra */
+.top-title{display:flex;align-items:center;min-width:0;line-height:1}
+.top-title img{display:block;width:min(176px,44vw);height:auto;max-height:26px;object-fit:contain;object-position:left center}
+@media(max-width:380px){.top-title img{width:min(158px,42vw);max-height:24px}}
+
 </style>
 
 </head>
@@ -750,7 +756,7 @@ html,body{background:#faf6ee}
     <div id="app" style="display:none;">
         <div class="topbar">
             <div class="topbar-inner">
-                <div class="top-title">TJA</div>
+                <div class="top-title"><img src="./logo-tja-header.png" alt="TJA Transportes"></div>
                 <button class="back-btn" onclick="goBack()">← Voltar</button>
             </div>
         </div>

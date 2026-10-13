@@ -1,41 +1,24 @@
-const CACHE_NAME = 'servico-mercadona-tja-v1';
+const CACHE_NAME = 'servico-mercadona-cabecalho-logotipo-tja-v22';
 const SHELL_FILES = [
-  './',
-  './index.html',
-  './manifest.json',
-  './site.webmanifest',
-  './Dados.xlsx',
-  './favicon.ico',
-  './favicon-16.png',
-  './favicon-32.png',
-  './apple-touch-icon.png',
-  './icon-192.png',
-  './icon-512.png'
+  './', './index.html', './manifest.json', './site.webmanifest',
+  './favicon.ico', './favicon-16.png', './favicon-32.png', './logo-tja-header.png',
+  './apple-touch-icon.png', './icon-192.png', './icon-512.png'
 ];
-
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(SHELL_FILES))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL_FILES)).then(() => self.skipWaiting()));
 });
-
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
+      .then(keys => Promise.all(keys.filter(key => key.startsWith('servico-mercadona-') && key !== CACHE_NAME).map(key => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
-
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
-
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
     try {

@@ -1,7 +1,14 @@
-Coloque aqui as fotografias das lojas.
+Atualização: o cabeçalho apresenta agora a sigla TJA, mantendo a mesma altura. Durante o swipe para a direita, o menu atual mantém-se totalmente opaco e o menu anterior aparece apenas na área libertada pelo movimento.
 
-Exemplo para a loja 7009:
-- 7009.1.jpg (primeira fotografia)
-- 7009.2.jpg (segunda fotografia)
+O que foi alterado:
+- Removida a redução de opacidade da página atual durante o gesto.
+- A página atual tem um fundo sólido enquanto desliza, para que o menu anterior não apareça através dos cartões e do conteúdo.
+- Mantida a pré-visualização do menu anterior por baixo e a transição de regresso.
+- O cabeçalho utiliza agora o logótipo oficial TJA Transportes fornecido, sem alterar a altura ou o estilo do cabeçalho.
+- Atualizada a cache da aplicação (service worker).
 
-São aceites .jpg, .jpeg, .png, .webp, .gif e .avif, inclusive variantes em maiúsculas.
+Para publicar no GitHub Pages:
+1. Substituir o ficheiro index.html pelo deste pacote.
+2. Substituir também o ficheiro sw.js para atualizar a cache da PWA.
+3. Manter Dados.xlsx, manifest.json, site.webmanifest, a pasta Fotos/ e os ícones existentes. O ficheiro logo-tja-header.png deve ficar ao lado de index.html.
+4. Depois da publicação, fechar e voltar a abrir a aplicação no telemóvel. Se a versão antiga persistir, atualizar a página uma vez com ligação à Internet.
