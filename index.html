@@ -622,20 +622,20 @@ html,body{background:#faf6ee!important;color-scheme:light}
 
 
 /* Swipe de regresso: ecrã atual totalmente opaco enquanto desliza */
-#app.edge-back-dragging{
+.page.edge-back-dragging{
     transition:none!important;
     will-change:transform;
     opacity:1!important;
     background-color:#faf6ee;
 }
-#app.edge-back-finishing{
+.page.edge-back-finishing{
     transition:transform 210ms cubic-bezier(.22,.72,.22,1)!important;
     will-change:transform;
     opacity:1!important;
     background-color:#faf6ee;
 }
 @media(prefers-reduced-motion:reduce){
-    #app.edge-back-finishing{transition:transform 120ms ease!important}
+    .page.edge-back-finishing{transition:transform 120ms ease!important}
 }
 
 
@@ -882,7 +882,7 @@ body.interposts-screen-locked .app-signature{
 @media(min-width:601px){
     .app-signature{height:46px!important;min-height:46px!important;max-height:46px!important;bottom:0!important;}
 }
-.edge-back-preview .app-signature{display:none!important}
+.edge-back-preview .app-signature{display:flex!important;visibility:visible!important;opacity:1!important}
 
 /* A área da página termina antes da assinatura fixa para que esta nunca tape conteúdo */
 .page>.home{
@@ -1114,8 +1114,8 @@ html::before {
 /* v33: manter a assinatura acima do ecrã que desliza durante o swipe de regresso.
    Só aumenta a camada do rodapé enquanto #app está a ser animado; fora da transição
    mantém a hierarquia normal, sem interferir com modais nem com os restantes menus. */
-.page > #app.edge-back-dragging ~ .app-signature,
-.page > #app.edge-back-finishing ~ .app-signature {
+.page.edge-back-dragging > .app-signature,
+.page.edge-back-finishing > .app-signature {
     position: fixed !important;
     z-index: 2147483646 !important;
     visibility: visible !important;
@@ -2979,10 +2979,10 @@ function attachEdgeSwipeBack() {
     let active = false;
     let cancelled = false;
     let horizontal = false;
-    let appElement = null;
+    let pageElement = null;
     let previewElement = null;
-    let originalAppPosition = '';
-    let originalAppZIndex = '';
+    let originalPagePosition = '';
+    let originalPageZIndex = '';
     const edgeWidth = 24;
     const finishDistance = 76;
     const maxDrag = () => Math.max(1, window.innerWidth);
@@ -3036,33 +3036,33 @@ function attachEdgeSwipeBack() {
 
     function restoreAppLayer(node) {
         if (!node) return;
-        node.style.position = originalAppPosition;
-        node.style.zIndex = originalAppZIndex;
+        node.style.position = originalPagePosition;
+        node.style.zIndex = originalPageZIndex;
     }
 
     function clearMotion() {
-        if (!appElement) {
+        if (!pageElement) {
             removePreview();
             return;
         }
-        const node = appElement;
+        const node = pageElement;
         node.classList.remove('edge-back-dragging', 'edge-back-finishing');
         node.style.transform = '';
         node.style.opacity = '';
         node.style.boxShadow = '';
         restoreAppLayer(node);
-        appElement = null;
+        pageElement = null;
         removePreview();
     }
 
     function springBack() {
-        if (!appElement) {
+        if (!pageElement) {
             removePreview();
             return;
         }
-        const node = appElement;
+        const node = pageElement;
         const preview = previewElement;
-        appElement = null;
+        pageElement = null;
         previewElement = null;
         node.classList.remove('edge-back-dragging');
         node.classList.add('edge-back-finishing');
@@ -3094,32 +3094,32 @@ function attachEdgeSwipeBack() {
         const touch = event.touches[0];
         if (touch.clientX > edgeWidth) return;
 
-        appElement = document.getElementById('app');
-        if (!appElement || getComputedStyle(appElement).display === 'none') {
-            appElement = null;
+        pageElement = document.querySelector('.page');
+        if (!pageElement || getComputedStyle(pageElement).display === 'none') {
+            pageElement = null;
             return;
         }
 
         // Criar a página anterior antes de o ecrã atual começar a deslocar-se.
         removePreview();
         previewElement = makeBackPreview();
-        originalAppPosition = appElement.style.position;
-        originalAppZIndex = appElement.style.zIndex;
-        appElement.style.position = 'relative';
-        appElement.style.zIndex = '1001';
+        originalPagePosition = pageElement.style.position;
+        originalPageZIndex = pageElement.style.zIndex;
+        pageElement.style.position = 'relative';
+        pageElement.style.zIndex = '1001';
 
         startX = touch.clientX;
         startY = touch.clientY;
         active = true;
-        appElement.classList.remove('edge-back-finishing');
-        appElement.classList.add('edge-back-dragging');
-        appElement.style.transform = 'translate3d(0,0,0)';
-        appElement.style.opacity = '1';
-        appElement.style.boxShadow = '0 0 32px rgba(32,41,35,.12)';
+        pageElement.classList.remove('edge-back-finishing');
+        pageElement.classList.add('edge-back-dragging');
+        pageElement.style.transform = 'translate3d(0,0,0)';
+        pageElement.style.opacity = '1';
+        pageElement.style.boxShadow = '0 0 32px rgba(32,41,35,.12)';
     }, { passive: true, capture: true });
 
     document.addEventListener('touchmove', event => {
-        if (!active || !appElement || event.touches.length !== 1) {
+        if (!active || !pageElement || event.touches.length !== 1) {
             if (event.touches.length > 1) cancelled = true;
             return;
         }
@@ -3141,13 +3141,13 @@ function attachEdgeSwipeBack() {
 
         // A página atual move-se por cima do menu anterior, que fica visível desde o início.
         const offset = Math.max(0, Math.min(dx, maxDrag()));
-        appElement.style.transform = 'translate3d(' + offset + 'px,0,0)';
-        appElement.style.opacity = '1';
+        pageElement.style.transform = 'translate3d(' + offset + 'px,0,0)';
+        pageElement.style.opacity = '1';
     }, { passive: true, capture: true });
 
     document.addEventListener('touchend', event => {
         if (!active || cancelled || !event.changedTouches || !event.changedTouches.length) {
-            if (appElement) springBack();
+            if (pageElement) springBack();
             active = false;
             return;
         }
@@ -3157,10 +3157,10 @@ function attachEdgeSwipeBack() {
         const dy = touch.clientY - startY;
         active = false;
 
-        if (horizontal && dx >= finishDistance && Math.abs(dy) <= 70 && currentPage !== 'home' && appElement) {
-            const node = appElement;
+        if (horizontal && dx >= finishDistance && Math.abs(dy) <= 70 && currentPage !== 'home' && pageElement) {
+            const node = pageElement;
             const preview = previewElement;
-            appElement = null;
+            pageElement = null;
             previewElement = null;
             node.classList.remove('edge-back-dragging');
             node.classList.add('edge-back-finishing');
@@ -3183,7 +3183,7 @@ function attachEdgeSwipeBack() {
     }, { passive: true, capture: true });
 
     document.addEventListener('touchcancel', () => {
-        if (appElement) springBack();
+        if (pageElement) springBack();
         active = false;
         cancelled = false;
         horizontal = false;
