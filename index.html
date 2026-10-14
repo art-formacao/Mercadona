@@ -1278,6 +1278,42 @@ html::before {
   #home .logo-tja { max-height: 8.4svh !important; }
 }
 
+
+
+/* Ajuste pedido no menu inicial: contactos mais legíveis e botões principais mais altos.
+   Mantém o espaçamento entre os dois botões e não altera outros ecrãs da aplicação. */
+#home .home-actions .primary-btn,
+#home .home-actions .normas-home-btn {
+    min-height: 62px !important;
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
+}
+#home .home-contacts a {
+    min-height: 62px !important;
+    padding: 10px 8px !important;
+}
+#home .home-contacts a span { font-size: 13px !important; }
+#home .home-contacts a strong { font-size: 15px !important; }
+@media (max-width: 600px) {
+    #home .home-actions .primary-btn,
+    #home .home-actions .normas-home-btn {
+        height: 58px !important;
+        min-height: 58px !important;
+        max-height: 58px !important;
+        padding: 12px 14px !important;
+    }
+    #home .home-contacts a {
+        min-height: 58px !important;
+        padding: 8px 5px !important;
+    }
+    #home .home-contacts a span { font-size: 11px !important; }
+    #home .home-contacts a strong { font-size: 14px !important; }
+}
+@media (max-width: 360px) {
+    #home .home-contacts a span { font-size: 10px !important; }
+    #home .home-contacts a strong { font-size: 13px !important; }
+}
+
 </style>
 
 </head>
