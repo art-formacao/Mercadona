@@ -1240,6 +1240,44 @@ html::before {
   #home .home-contacts a strong{font-size:11px}
 }
 
+
+
+/* Ajustes pedidos para o menu inicial — apenas em telemóveis */
+@media (max-width: 600px) {
+  /* Aumenta visualmente os logótipos sem mudar a largura estrutural do menu */
+  #home .logo-mercadona {
+    max-height: 11svh !important;
+    transform: scale(.99) !important;
+    transform-origin: center center;
+  }
+  #home .logo-tja {
+    max-height: 9svh !important;
+    transform: scale(.84) !important;
+    transform-origin: center center;
+  }
+  /* Aproxima o botão Iniciar Serviço do logótipo Mercadona */
+  #home .logos {
+    margin-bottom: calc(-1 * clamp(8px, 3svh, 20px));
+  }
+  /* Contactos ligeiramente mais abaixo, com células mais altas */
+  #home .home-contacts-title {
+    margin-top: 34px !important;
+    margin-bottom: 9px !important;
+    color: var(--green) !important;
+    font-size: 18px !important;
+    font-weight: 750 !important;
+    letter-spacing: -.025em;
+  }
+  #home .home-contacts a {
+    min-height: 52px !important;
+    padding: 8px 5px !important;
+  }
+}
+@media (max-width: 360px) {
+  #home .logo-mercadona { max-height: 10.45svh !important; }
+  #home .logo-tja { max-height: 8.4svh !important; }
+}
+
 </style>
 
 </head>
