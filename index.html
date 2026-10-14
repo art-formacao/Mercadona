@@ -13,7 +13,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Serviço Mercadona">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 
 <style>
 :root{--green:#176344;--green-dark:#104b34;--ink:#202923;--muted:#66736b;--surface:#fffaf2;--page:#eee8dc;--line:rgba(40,55,44,.13);--blue:#315d78;--sand:#e4d4b8;--gold:#b58a4b}
@@ -606,10 +606,10 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
 .page>.home{flex:1 0 auto;min-height:calc(100vh - 46px)}
 
 
-/* iPhone/PWA: estender a cor do cabeçalho por trás da barra de estado superior */
-html,body{background:#faf6ee}
+/* iPhone/PWA: usar uma barra de estado opaca com a mesma cor do cabeçalho */
+html,body{background:#faf6ee!important;color-scheme:light}
 .topbar{
-    background:#faf6ee;
+    background:#faf6ee!important;
     padding-top:calc(14px + env(safe-area-inset-top, 0px));
     padding-top:calc(14px + constant(safe-area-inset-top));
     padding-top:calc(14px + env(safe-area-inset-top, 0px));
@@ -1057,6 +1057,16 @@ html.home-screen-locked.stores-list-screen::before,
 body.home-screen-locked.app-menu-layout,
 body.home-screen-locked.app-menu-layout>.page {
     background:#faf6ee!important;
+}
+
+
+/* A cor da barra superior deve coincidir com o cabeçalho em todos os menus.
+   O modo "default" evita a sobreposição translúcida do iOS que escurecia esta zona. */
+html, body { background-color: #faf6ee !important; }
+.topbar, body.app-menu-layout, body.app-menu-layout > .page,
+body.app-menu-layout > .page > #app { background-color: #faf6ee !important; }
+@media (display-mode: standalone) {
+  html, body { background-color: #faf6ee !important; }
 }
 
 </style>
