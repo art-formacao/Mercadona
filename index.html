@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
-<meta name="theme-color" content="#faf6ee">
+<meta name="theme-color" content="#e7dbcb">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Serviço Mercadona">
@@ -952,6 +952,54 @@ body.stores-list-screen #app>.screen{
     .stores-fixed-header .subtitle{font-size:15px;margin-bottom:18px;}
 }
 
+
+
+/* Ajuste final: assinatura mais próxima da base e cor uniforme na zona da hora */
+:root{
+    --signature-height:44px;
+    --signature-bottom:max(0px, calc(env(safe-area-inset-bottom, 0px) - 20px));
+    --status-bar-color:#faf6ee;
+}
+html::before{
+    content:"";
+    position:fixed;
+    z-index:99999;
+    top:0;left:0;right:0;
+    height:env(safe-area-inset-top, 0px);
+    background:var(--status-bar-color, #faf6ee);
+    pointer-events:none;
+}
+html.home-screen-locked{--status-bar-color:#e7dbcb;}
+html.interposts-screen-locked,html.app-menu-layout{--status-bar-color:#faf6ee;}
+.app-signature{
+    bottom:var(--signature-bottom)!important;
+    height:var(--signature-height)!important;
+    min-height:var(--signature-height)!important;
+    max-height:var(--signature-height)!important;
+    padding:6px 12px!important;
+    background:transparent!important;
+    border:0!important;
+}
+/* Reserva exatamente o espaço ocupado pela assinatura já reposicionada. */
+.page>.home{
+    height:calc(100svh - var(--signature-height) - var(--signature-bottom))!important;
+    min-height:calc(100svh - var(--signature-height) - var(--signature-bottom))!important;
+    max-height:calc(100svh - var(--signature-height) - var(--signature-bottom))!important;
+    flex-basis:calc(100svh - var(--signature-height) - var(--signature-bottom))!important;
+}
+body.app-menu-layout>.page>#app{
+    height:calc(100svh - var(--signature-height) - var(--signature-bottom))!important;
+    max-height:calc(100svh - var(--signature-height) - var(--signature-bottom))!important;
+}
+body.interposts-screen-locked>.page>#app{
+    height:calc(100svh - var(--signature-height) - var(--signature-bottom))!important;
+    max-height:calc(100svh - var(--signature-height) - var(--signature-bottom))!important;
+    flex:0 0 calc(100svh - var(--signature-height) - var(--signature-bottom))!important;
+}
+@media(min-width:601px){
+    :root{--signature-height:46px;--signature-bottom:0px;}
+}
+
 </style>
 
 </head>
@@ -1211,7 +1259,20 @@ let selectedStore = null;
 let storePhotos = [];
 let currentPhotoIndex = 0;
 
+function setScreenThemeColor(color) {
+    const htmlRoot = document.documentElement;
+    const bodyRoot = document.body;
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) themeMeta.setAttribute('content', color);
+    if (htmlRoot) {
+        htmlRoot.style.setProperty('--status-bar-color', color);
+        htmlRoot.style.setProperty('background-color', color, 'important');
+    }
+    if (bodyRoot) bodyRoot.style.setProperty('background-color', color, 'important');
+}
+
 function setHomeScreenLock(locked) {
+    setScreenThemeColor(locked ? '#e7dbcb' : '#faf6ee');
     const htmlRoot = document.documentElement;
     const bodyRoot = document.body;
     if (htmlRoot) {
@@ -1230,6 +1291,7 @@ function setHomeScreenLock(locked) {
 }
 
 function setInterpostsScreenLock(locked) {
+    if (locked) setScreenThemeColor('#faf6ee');
     const htmlRoot = document.documentElement;
     const bodyRoot = document.body;
     if (htmlRoot) htmlRoot.classList.toggle('interposts-screen-locked', locked);
@@ -1250,6 +1312,7 @@ function showInterposts() {
 }
 
 function showPage(page) {
+    setScreenThemeColor('#faf6ee');
     document.getElementById('interpostsPage').style.display = page === 'interposts' ? 'block' : 'none';
     document.getElementById('storesPage').style.display = page === 'stores' ? 'flex' : 'none';
     document.getElementById('profilePage').style.display = page === 'profile' ? 'block' : 'none';
