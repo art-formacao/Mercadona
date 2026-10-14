@@ -860,6 +860,98 @@ body.interposts-screen-locked .app-signature{
     background:transparent!important;
 }
 
+
+
+/* Rodapé de assinatura fixo e integrado no fundo de todos os ecrãs */
+.app-signature{
+    position:fixed!important;
+    left:0!important;right:0!important;
+    bottom:env(safe-area-inset-bottom,0px)!important;
+    z-index:900!important;
+    width:100%!important;
+    height:44px!important;min-height:44px!important;max-height:44px!important;
+    flex:0 0 44px!important;
+    box-sizing:border-box!important;
+    border:0!important;
+    background:transparent!important;
+    padding:8px 12px!important;
+    pointer-events:none!important;
+}
+@media(min-width:601px){
+    .app-signature{height:46px!important;min-height:46px!important;max-height:46px!important;bottom:0!important;}
+}
+.edge-back-preview .app-signature{display:none!important}
+
+/* A área da página termina antes da assinatura fixa para que esta nunca tape conteúdo */
+.page>.home{
+    height:calc(100svh - 44px - env(safe-area-inset-bottom,0px))!important;
+    min-height:calc(100svh - 44px - env(safe-area-inset-bottom,0px))!important;
+    max-height:calc(100svh - 44px - env(safe-area-inset-bottom,0px))!important;
+    flex:0 0 calc(100svh - 44px - env(safe-area-inset-bottom,0px))!important;
+}
+@media(min-width:601px){
+    .page>.home{height:calc(100svh - 46px)!important;min-height:calc(100svh - 46px)!important;max-height:calc(100svh - 46px)!important;flex-basis:calc(100svh - 46px)!important;}
+}
+
+/* Os menus usam um viewport fixo; apenas as áreas de conteúdo permitidas podem deslocar-se */
+html.app-menu-layout,body.app-menu-layout{
+    position:fixed!important;inset:0!important;
+    width:100%!important;height:100%!important;min-height:0!important;
+    overflow:hidden!important;overscroll-behavior:none!important;
+}
+body.app-menu-layout>.page{
+    display:flex!important;flex-direction:column!important;
+    position:relative!important;width:100%!important;
+    height:100svh!important;min-height:0!important;max-height:100svh!important;
+    overflow:hidden!important;overscroll-behavior:none!important;
+}
+body.app-menu-layout>.page>#app{
+    display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+    width:100%!important;height:calc(100svh - 44px - env(safe-area-inset-bottom,0px))!important;
+    min-height:0!important;max-height:calc(100svh - 44px - env(safe-area-inset-bottom,0px))!important;
+    overflow:hidden!important;background:#faf6ee;
+}
+body.app-menu-layout #app>.topbar{position:relative!important;top:auto!important;flex:0 0 auto!important;}
+body.app-menu-layout #app>.screen{
+    flex:1 1 auto!important;min-height:0!important;height:auto!important;
+    overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+}
+
+/* Ecrã de lojas: título, instrução e pesquisa ficam fixos; só a lista desliza */
+body.stores-list-screen #app>.screen{
+    display:flex!important;flex-direction:column!important;
+    overflow:hidden!important;min-height:0!important;
+    padding-top:0!important;padding-bottom:0!important;
+}
+#storesPage.section{
+    display:flex;flex:1 1 auto;flex-direction:column;
+    width:100%;height:auto!important;min-height:0!important;max-height:100%;
+    margin:16px 0 0!important;overflow:hidden!important;
+}
+.stores-fixed-header{flex:0 0 auto;min-width:0;width:100%;}
+.stores-fixed-header h1{flex:0 0 auto;}
+.stores-fixed-header .subtitle{flex:0 0 auto;}
+.stores-fixed-header .data-status{flex:0 0 auto;}
+.stores-fixed-header .store-head{flex:0 0 auto;margin-bottom:14px;}
+.store-list-scroll{
+    flex:1 1 auto;min-height:0;min-width:0;width:100%;
+    overflow-y:auto;overflow-x:hidden;
+    overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    touch-action:pan-y;scrollbar-gutter:stable;
+    padding:2px 0 8px;
+}
+.store-list-scroll .stores{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.store-list-scroll .empty{padding:24px 12px;}
+@media(max-width:700px){
+    #storesPage.section{padding:22px 18px;border-radius:20px;}
+    .store-list-scroll .stores{grid-template-columns:1fr;}
+}
+@media(max-width:460px){
+    .stores-fixed-header h1{font-size:29px;}
+    .stores-fixed-header .subtitle{font-size:15px;margin-bottom:18px;}
+}
+
 </style>
 
 </head>
@@ -914,21 +1006,25 @@ body.interposts-screen-locked .app-signature{
             </section>
 
             <section id="storesPage" class="section" style="display:none;">
-                <h1 id="storesTitle">Escolha a loja</h1>
-                <p class="subtitle">Indique a loja para a qual vai descarregar.</p>
+                <div class="stores-fixed-header">
+                    <h1 id="storesTitle">Escolha a loja</h1>
+                    <p class="subtitle">Indique a loja para a qual vai descarregar.</p>
 
-                <div id="dataStatus" class="data-status" role="status" aria-live="polite">
-                    A carregar as lojas do ficheiro Dados.xlsx…
-                </div>
-<div class="store-head">
-                    <input id="storeSearch" class="search"
-                           type="search"
-                           placeholder="Procurar por número ou nome..."
-                           oninput="filterStores()">
+                    <div id="dataStatus" class="data-status" role="status" aria-live="polite">
+                        A carregar as lojas do ficheiro Dados.xlsx…
+                    </div>
+                    <div class="store-head">
+                        <input id="storeSearch" class="search"
+                               type="search"
+                               placeholder="Procurar por número ou nome..."
+                               oninput="filterStores()">
+                    </div>
                 </div>
 
-                <div id="stores" class="stores"></div>
-                <div id="empty" class="empty">Não foram encontradas lojas.</div>
+                <div id="storeListScroll" class="store-list-scroll" aria-label="Lista de lojas">
+                    <div id="stores" class="stores"></div>
+                    <div id="empty" class="empty">Não foram encontradas lojas.</div>
+                </div>
             </section>
 
             <section id="profilePage" class="section profile-page" style="display:none;">
@@ -1118,8 +1214,18 @@ let currentPhotoIndex = 0;
 function setHomeScreenLock(locked) {
     const htmlRoot = document.documentElement;
     const bodyRoot = document.body;
-    if (htmlRoot) htmlRoot.classList.toggle('home-screen-locked', locked);
-    if (bodyRoot) bodyRoot.classList.toggle('home-screen-locked', locked);
+    if (htmlRoot) {
+        htmlRoot.classList.toggle('home-screen-locked', locked);
+        if (locked) {
+            htmlRoot.classList.remove('app-menu-layout', 'stores-list-screen', 'interposts-screen-locked');
+        }
+    }
+    if (bodyRoot) {
+        bodyRoot.classList.toggle('home-screen-locked', locked);
+        if (locked) {
+            bodyRoot.classList.remove('app-menu-layout', 'stores-list-screen', 'interposts-screen-locked');
+        }
+    }
     if (locked && window.scrollY !== 0) window.scrollTo(0, 0);
 }
 
@@ -1145,10 +1251,27 @@ function showInterposts() {
 
 function showPage(page) {
     document.getElementById('interpostsPage').style.display = page === 'interposts' ? 'block' : 'none';
-    document.getElementById('storesPage').style.display = page === 'stores' ? 'block' : 'none';
+    document.getElementById('storesPage').style.display = page === 'stores' ? 'flex' : 'none';
     document.getElementById('profilePage').style.display = page === 'profile' ? 'block' : 'none';
     currentPage = page;
+
+    const htmlRoot = document.documentElement;
+    const bodyRoot = document.body;
+    if (htmlRoot) {
+        htmlRoot.classList.add('app-menu-layout');
+        htmlRoot.classList.toggle('stores-list-screen', page === 'stores');
+        htmlRoot.classList.remove('home-screen-locked');
+    }
+    if (bodyRoot) {
+        bodyRoot.classList.add('app-menu-layout');
+        bodyRoot.classList.toggle('stores-list-screen', page === 'stores');
+        bodyRoot.classList.remove('home-screen-locked');
+    }
     setInterpostsScreenLock(page === 'interposts');
+    if (page === 'stores') {
+        const listScroll = document.getElementById('storeListScroll');
+        if (listScroll) listScroll.scrollTop = 0;
+    }
     window.scrollTo(0, 0);
 }
 
