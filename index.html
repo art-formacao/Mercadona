@@ -1109,6 +1109,23 @@ html::before {
     pointer-events: none !important;
 }
 
+
+
+/* v33: manter a assinatura acima do ecrã que desliza durante o swipe de regresso.
+   Só aumenta a camada do rodapé enquanto #app está a ser animado; fora da transição
+   mantém a hierarquia normal, sem interferir com modais nem com os restantes menus. */
+.page > #app.edge-back-dragging ~ .app-signature,
+.page > #app.edge-back-finishing ~ .app-signature {
+    position: fixed !important;
+    z-index: 2147483646 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+    background: transparent !important;
+    border: 0 !important;
+    pointer-events: none !important;
+}
+
 </style>
 
 </head>
