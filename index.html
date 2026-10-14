@@ -958,7 +958,7 @@ body.stores-list-screen #app>.screen{
 :root{
     --signature-height:44px;
     --signature-bottom:max(0px, calc(env(safe-area-inset-bottom, 0px) - 20px));
-    --status-bar-color:#faf6ee;
+    --status-bar-color:#faf6ee!important;
 }
 html::before{
     content:"";
@@ -966,10 +966,10 @@ html::before{
     z-index:99999;
     top:0;left:0;right:0;
     height:env(safe-area-inset-top, 0px);
-    background:var(--status-bar-color, #faf6ee);
+    background:#faf6ee!important;
     pointer-events:none;
 }
-html.home-screen-locked{--status-bar-color:#e7dbcb;}
+html.home-screen-locked{--status-bar-color:#faf6ee!important;}
 html.interposts-screen-locked,html.app-menu-layout{--status-bar-color:#faf6ee;}
 .app-signature{
     bottom:var(--signature-bottom)!important;
@@ -1319,19 +1319,16 @@ let storePhotos = [];
 let currentPhotoIndex = 0;
 
 function setScreenThemeColor(color) {
+    // A barra de estado do iPhone deve usar sempre a mesma cor do cabeçalho.
+    const headerColor = '#faf6ee';
     const htmlRoot = document.documentElement;
-    const bodyRoot = document.body;
     const themeMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeMeta) themeMeta.setAttribute('content', color);
-    if (htmlRoot) {
-        htmlRoot.style.setProperty('--status-bar-color', color);
-        htmlRoot.style.setProperty('background-color', color, 'important');
-    }
-    if (bodyRoot) bodyRoot.style.setProperty('background-color', color, 'important');
+    if (themeMeta) themeMeta.setAttribute('content', headerColor);
+    if (htmlRoot) htmlRoot.style.setProperty('--status-bar-color', headerColor);
 }
 
 function setHomeScreenLock(locked) {
-    setScreenThemeColor(locked ? '#e7dbcb' : '#faf6ee');
+    setScreenThemeColor('#faf6ee');
     const htmlRoot = document.documentElement;
     const bodyRoot = document.body;
     if (htmlRoot) {
