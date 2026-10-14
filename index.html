@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
-<meta name="theme-color" content="#e7dbcb">
+<meta name="theme-color" content="#faf6ee">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Serviço Mercadona">
@@ -998,6 +998,65 @@ body.interposts-screen-locked>.page>#app{
 }
 @media(min-width:601px){
     :root{--signature-height:46px;--signature-bottom:0px;}
+}
+
+
+
+/* Correção final: a lista de lojas ocupa toda a área interna restante do cartão.
+   O título e a pesquisa permanecem fixos; só a lista desliza até ao limite inferior. */
+body.stores-list-screen #storesPage.section {
+    display:flex!important;
+    flex:1 1 0px!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:16px 0 0!important;
+    padding-bottom:0!important;
+    overflow:hidden!important;
+}
+body.stores-list-screen #storesPage .stores-fixed-header {
+    flex:0 0 auto!important;
+    min-height:0!important;
+}
+body.stores-list-screen #storeListScroll {
+    display:block!important;
+    flex:1 1 0px!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:none!important;
+    width:100%!important;
+    margin:0!important;
+    padding:2px 0 14px!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior-y:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+    touch-action:pan-y!important;
+}
+
+/* No ecrã das lojas/interpostos, a zona da hora usa exatamente o fundo claro do cabeçalho. */
+html.app-menu-layout,
+body.app-menu-layout,
+body.app-menu-layout>.page,
+body.app-menu-layout>.page>#app {
+    background:#faf6ee!important;
+}
+html.app-menu-layout::before,
+html.stores-list-screen::before,
+html.interposts-screen-locked::before {
+    background:#faf6ee!important;
+}
+html.app-menu-layout,
+html.stores-list-screen,
+html.interposts-screen-locked {
+    --status-bar-color:#faf6ee!important;
+}
+/* Impede que uma classe antiga do ecrã inicial deixe uma faixa escura ao mudar de menu. */
+html.home-screen-locked.app-menu-layout::before,
+html.home-screen-locked.stores-list-screen::before,
+body.home-screen-locked.app-menu-layout,
+body.home-screen-locked.app-menu-layout>.page {
+    background:#faf6ee!important;
 }
 
 </style>
