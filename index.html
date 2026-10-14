@@ -1151,10 +1151,6 @@ html::before {
 .normas-source{padding:0 20px 18px;color:#8a8172;font-size:11px;line-height:1.5}
 @media(max-width:600px){.normas-home-btn{margin-top:-18px;font-size:15px}.normas-topics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.normas-topic{min-height:78px;flex-direction:row;justify-content:flex-start;padding:12px 14px}.normas-topic .topic-icon{font-size:22px}.normas-content-head{padding:18px 15px 0}.normas-content-head h2{font-size:22px}.normas-photo-row{gap:7px;padding:15px 12px 3px}.normas-photo img{height:95px}.normas-photo span{font-size:10px;padding:7px}.normas-bullets{padding:15px 12px 18px}.normas-bullets li{font-size:13px}.normas-warning{margin:0 12px 16px}.normas-source{padding:0 12px 15px}}
 
-
-.norma-phone-link{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;margin:0 2px;border:1px solid rgba(23,99,68,.22);border-radius:9px;background:#eaf3e8;color:#145d3d;font-weight:800;text-decoration:none;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:rgba(23,99,68,.18)}
-.norma-phone-link:active{background:#d7e9d4;transform:scale(.98)}
-.norma-phone-link:focus-visible{outline:3px solid #b58a4b;outline-offset:2px}
 </style>
 
 </head>
@@ -1265,7 +1261,7 @@ html::before {
                     <div class="store-photo-wrap">
                         <div class="store-photo-gallery" id="storePhotoStage" aria-label="Galeria de fotografias da loja">
                             <div id="storePhotoPlaceholder" class="store-photo-placeholder" role="img" aria-label="Fotografia da loja não configurada">
-                                <svg viewBox="0 0 64 64" aria-hidden='true'>
+                                <svg viewBox="0 0 64 64" aria-hidden="true">
                                     <rect x="8" y="15" width="48" height="38" rx="7"></rect>
                                     <circle cx="23" cy="28" r="4"></circle>
                                     <path d="M13 47 27 34l9 8 7-6 8 11"></path>
@@ -1274,9 +1270,9 @@ html::before {
                                 <span id="photoPlaceholderDescription">A fotografia será carregada a partir da pasta Fotos.</span>
                             </div>
                             <img id="storePhoto" class="store-photo-image" alt="Abrir fotografia em ecrã inteiro" title="Toque para ampliar" draggable="false" hidden>
-                            <img id="storePhotoIncoming" class="store-photo-slide-image" alt="" aria-hidden='true' draggable="false" hidden>
-                            <button id="photoPrev" class="photo-arrow photo-prev" type="button" aria-label="Fotografia anterior" onclick="changeStorePhoto(-1)" hidden><svg viewBox="0 0 24 24" aria-hidden='true'><path d="M15 18 9 12l6-6"/></svg></button>
-                            <button id="photoNext" class="photo-arrow photo-next" type="button" aria-label="Fotografia seguinte" onclick="changeStorePhoto(1)" hidden><svg viewBox="0 0 24 24" aria-hidden='true'><path d="m9 18 6-6-6-6"/></svg></button>
+                            <img id="storePhotoIncoming" class="store-photo-slide-image" alt="" aria-hidden="true" draggable="false" hidden>
+                            <button id="photoPrev" class="photo-arrow photo-prev" type="button" aria-label="Fotografia anterior" onclick="changeStorePhoto(-1)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6"/></svg></button>
+                            <button id="photoNext" class="photo-arrow photo-next" type="button" aria-label="Fotografia seguinte" onclick="changeStorePhoto(1)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
                             <span id="photoCounter" class="photo-counter" hidden></span>
                         </div>
                     </div>
@@ -1295,14 +1291,14 @@ html::before {
                             <div class="detail-icon address-icon">⌖</div>
                             <div class="detail-copy">
                                 <span class="detail-label">Morada</span>
-                                <div class="detail-value-with-copy"><strong id="storeAddress">Morada a configurar</strong><button class="copy-value-btn" type="button" aria-label="Copiar morada" title="Copiar morada" onclick="copyProfileValue('storeAddress', this)"><svg viewBox="0 0 24 24" aria-hidden='true'><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg></button></div>
+                                <div class="detail-value-with-copy"><strong id="storeAddress">Morada a configurar</strong><button class="copy-value-btn" type="button" aria-label="Copiar morada" title="Copiar morada" onclick="copyProfileValue('storeAddress', this)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg></button></div>
                             </div>
                         </div>
                         <div class="detail-row">
                             <div class="detail-icon gps-icon">◎</div>
                             <div class="detail-copy">
                                 <span class="detail-label">Coordenadas GPS</span>
-                                <div class="detail-value-with-copy"><strong id="storeCoordinates">Coordenadas a configurar</strong><button class="copy-value-btn" type="button" aria-label="Copiar coordenadas GPS" title="Copiar coordenadas GPS" onclick="copyProfileValue('storeCoordinates', this)"><svg viewBox="0 0 24 24" aria-hidden='true'><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg></button></div>
+                                <div class="detail-value-with-copy"><strong id="storeCoordinates">Coordenadas a configurar</strong><button class="copy-value-btn" type="button" aria-label="Copiar coordenadas GPS" title="Copiar coordenadas GPS" onclick="copyProfileValue('storeCoordinates', this)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg></button></div>
                             </div>
                         </div>
                         <div class="detail-row contact-detail-row">
@@ -1347,7 +1343,7 @@ html::before {
                 <div id="navigationWarning" class="navigation-warning" hidden role="dialog" aria-modal="true" aria-labelledby="navigationWarningTitle">
                     <div class="navigation-warning-backdrop" onclick="closeNavigationWarning()"></div>
                     <div class="navigation-warning-card">
-                        <div class="navigation-warning-icon" aria-hidden='true'>!</div>
+                        <div class="navigation-warning-icon" aria-hidden="true">!</div>
                         <div class="panel-kicker">AVISO DE NAVEGAÇÃO</div>
                         
                         <p><strong>Consulte o percurso antes de iniciar a navegação</strong></p>
@@ -1573,10 +1569,10 @@ const NORMA_TOPICS = {
             ["trailer", "Tenha a folha de rota à mão"]
         ],
         bullets: [
-            "Coordenador — Jorge Dias: <a class='norma-phone-link' href='tel:+351910028057' aria-label='Ligar ao Coordenador Jorge Dias'>910 028 057 <span aria-hidden='true'>📞</span></a>.",
-            "Gestores — contacto indicado no manual: <a class='norma-phone-link' href='tel:+351924442163' aria-label='Ligar aos Gestores'>924 442 163 <span aria-hidden='true'>📞</span></a>. Nomes: Jorge Pinho, João Silva, Bruno Valente, Pedro Ferreira, Diogo Magalhães e Gonçalo Vieira.",
-            "UPC Laúndos — <a class='norma-phone-link' href='tel:+351910000119' aria-label='Ligar à UPC Laúndos'>910 000 119 <span aria-hidden='true'>📞</span></a>. Nomes indicados: Rúben Arteiro, José Nogueira, Luís Pereira e Paulo Faria.",
-            "UPC Almeirim — <a class='norma-phone-link' href='tel:+351910495313' aria-label='Ligar à UPC Almeirim'>910 495 313 <span aria-hidden='true'>📞</span></a>. Contactos indicados: Marco Constantino, Ruben Cardoso e José Carlos Oliveira.",
+            "Coordenador — Jorge Dias: 910 028 057.",
+            "Gestores — contacto indicado no manual: 924 442 163. Nomes: Jorge Pinho, João Silva, Bruno Valente, Pedro Ferreira, Diogo Magalhães e Gonçalo Vieira.",
+            "UPC Laúndos — 910 000 119. Nomes indicados: Rúben Arteiro, José Nogueira, Luís Pereira e Paulo Faria.",
+            "UPC Almeirim — 910 495 313. Contactos indicados: Marco Constantino, Ruben Cardoso e José Carlos Oliveira.",
             "Horários indicados no manual: Gestores das 08:00 às 22:00; UPC das 22:00 às 08:00."
         ],
         warning: "Use os contactos conforme o horário indicado. Confirme os números com a TJA se houver alterações posteriores ao manual de 2025."
@@ -2535,12 +2531,12 @@ async function copyProfileValue(elementId, button) {
         button.classList.add('copied');
         button.title = 'Copiado';
         button.setAttribute('aria-label', 'Copiado');
-        button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden='true'><path d="m5 12 4 4L19 6"></path></svg>';
+        button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>';
         setTimeout(() => {
             button.classList.remove('copied');
             button.title = originalTitle;
             button.setAttribute('aria-label', originalLabel);
-            button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden='true'><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg>';
+            button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg>';
         }, 1400);
     }
 }
