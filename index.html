@@ -793,6 +793,73 @@ body.home-screen-locked #home{
     background:#e7dbcb!important;
 }
 
+
+
+/* Segundo ecrã — escolha do interposto fixo, com botões clicáveis e cor uniforme até à barra de estado */
+html.interposts-screen-locked,
+body.interposts-screen-locked{
+    height:100%!important;
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+    background:#faf6ee!important;
+}
+html.interposts-screen-locked{
+    position:fixed!important;
+    inset:0!important;
+    width:100%!important;
+}
+body.interposts-screen-locked{
+    position:fixed!important;
+    inset:0!important;
+    width:100%!important;
+    height:100vh!important;
+    height:100svh!important;
+    min-height:0!important;
+    padding:0!important;
+    touch-action:none!important;
+}
+body.interposts-screen-locked>.page{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%;
+    height:100vh;
+    height:100svh;
+    min-height:100vh;
+    min-height:100svh;
+    max-height:100vh;
+    max-height:100svh;
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+    background:#faf6ee!important;
+}
+body.interposts-screen-locked>.page>#app{
+    display:flex!important;
+    flex:1 1 0%!important;
+    flex-direction:column!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    background:#faf6ee!important;
+}
+body.interposts-screen-locked #app .topbar{
+    flex:0 0 auto!important;
+    background:#faf6ee!important;
+    border-bottom:1px solid var(--line);
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+}
+body.interposts-screen-locked #interpostsPage{
+    flex:0 0 auto!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    touch-action:none!important;
+}
+body.interposts-screen-locked .app-signature{
+    flex:0 0 44px!important;
+    min-height:44px!important;
+    border:0!important;
+    background:transparent!important;
+}
+
 </style>
 
 </head>
@@ -1056,6 +1123,19 @@ function setHomeScreenLock(locked) {
     if (locked && window.scrollY !== 0) window.scrollTo(0, 0);
 }
 
+function setInterpostsScreenLock(locked) {
+    const htmlRoot = document.documentElement;
+    const bodyRoot = document.body;
+    if (htmlRoot) htmlRoot.classList.toggle('interposts-screen-locked', locked);
+    if (bodyRoot) bodyRoot.classList.toggle('interposts-screen-locked', locked);
+    if (locked) {
+        // Evita que reste ativo o estilo do ecrã inicial por baixo da barra de estado.
+        if (htmlRoot) htmlRoot.classList.remove('home-screen-locked');
+        if (bodyRoot) bodyRoot.classList.remove('home-screen-locked');
+        if (window.scrollY !== 0) window.scrollTo(0, 0);
+    }
+}
+
 function showInterposts() {
     setHomeScreenLock(false);
     document.getElementById('home').style.display = 'none';
@@ -1068,6 +1148,7 @@ function showPage(page) {
     document.getElementById('storesPage').style.display = page === 'stores' ? 'block' : 'none';
     document.getElementById('profilePage').style.display = page === 'profile' ? 'block' : 'none';
     currentPage = page;
+    setInterpostsScreenLock(page === 'interposts');
     window.scrollTo(0, 0);
 }
 
@@ -2716,6 +2797,7 @@ function goBack() {
     } else if (currentPage === 'stores') {
         showPage('interposts');
     } else {
+        setInterpostsScreenLock(false);
         document.getElementById('app').style.display = 'none';
         document.getElementById('home').style.display = 'flex';
         currentPage = 'home';
