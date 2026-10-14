@@ -1214,6 +1214,32 @@ html::before {
     margin-right: auto;
   }
 }
+
+
+/* Menu inicial no telemóvel — composição conforme a imagem de referência */
+.home-contacts-title{display:none}
+@media(max-width:600px){
+  #home{justify-content:space-evenly!important;gap:0!important;padding:8px 16px!important}
+  #home .logos{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(34px,10svh,76px)!important;width:100%;flex:0 1 auto;min-height:0}
+  #home .logo-tja{order:-1;width:auto;max-width:100%;height:auto;max-height:7.5svh!important;transform:scale(.7);transform-origin:center center;}
+  #home .logo-mercadona{order:0;width:auto;max-width:100%;height:auto;max-height:10svh!important;transform:scale(.9);transform-origin:center center}
+  #home .home-actions{display:flex;flex-direction:column;align-items:center;gap:9px!important;width:100%;max-width:360px;flex:0 0 auto}
+  #home .home-actions .primary-btn,#home .home-actions .normas-home-btn{width:100%!important;max-width:360px!important;height:50px!important;min-height:50px!important;max-height:50px!important;padding:10px 14px!important;font-size:13px!important;margin:0!important}
+  #home .normas-home-btn{gap:8px}
+  #home .normas-home-btn .normas-icon{width:24px;height:24px;font-size:16px;border-radius:8px}
+  #home .home-contacts-title{display:block;width:100%;margin:28px 0 8px;color:#111;font-size:20px;line-height:1.25;font-weight:500;text-align:center}
+  #home .home-contacts{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:0}
+  #home .home-contacts a{min-height:41px;padding:5px 4px;border-radius:10px;gap:2px;box-shadow:0 2px 6px rgba(66,51,31,.04)}
+  #home .home-contacts a span{font-size:9px}
+  #home .home-contacts a strong{font-size:12px}
+}
+@media(max-width:360px){
+  #home .logo-tja{max-height:7svh!important}
+  #home .logo-mercadona{max-height:9.5svh!important}
+  #home .home-contacts-title{margin-top:24px;font-size:19px}
+  #home .home-contacts a strong{font-size:11px}
+}
+
 </style>
 
 </head>
@@ -1235,6 +1261,7 @@ html::before {
                 <span class="normas-icon">!</span>
                 NORMAS IMPORTANTES
             </button>
+            <h2 class="home-contacts-title">Contactos</h2>
             <nav class="home-contacts" aria-label="Contactos rápidos">
                 <a href="tel:+351910000119"><span>UPC Laúndos</span><strong>910 000 119</strong></a>
                 <a href="tel:+351910495313"><span>UPC Almeirim</span><strong>910 495 313</strong></a>
