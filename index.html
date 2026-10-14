@@ -427,7 +427,9 @@ h1{font-size:29px}.subtitle{font-size:15px;margin-bottom:24px}
     touch-action:none;
     overscroll-behavior:contain;
 }
-.photo-viewer-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.96)}
+.photo-viewer-backdrop{position:absolute;inset:0;background:#000}
+.photo-viewer.photo-viewer-dragging{transition:none!important}
+.photo-viewer.photo-viewer-dismissing{transition:transform .19s cubic-bezier(.2,.75,.25,1),opacity .19s ease;transform:translate3d(0,-100%,0);opacity:0;pointer-events:none}
 .photo-viewer-stage{
     position:absolute;
     inset:0;
@@ -1216,13 +1218,9 @@ html::before {
                     <div id="photoViewer" class="photo-viewer" hidden role="dialog" aria-modal="true" aria-label="Fotografia da loja em ecrã inteiro" onclick="handlePhotoViewerBackdrop(event)">
                         <div class="photo-viewer-backdrop"></div>
                         <button class="photo-viewer-close" type="button" aria-label="Fechar fotografia" onclick="closePhotoViewer(event)">×</button>
-                        <button class="photo-viewer-arrow photo-viewer-prev" type="button" aria-label="Fotografia anterior" onclick="changeViewerPhoto(-1, event)">‹</button>
                         <div id="photoViewerStage" class="photo-viewer-stage">
                             <img id="photoViewerImage" class="photo-viewer-image" alt="Fotografia ampliada" draggable="false">
                         </div>
-                        <button class="photo-viewer-arrow photo-viewer-next" type="button" aria-label="Fotografia seguinte" onclick="changeViewerPhoto(1, event)">›</button>
-                        <span id="photoViewerCounter" class="photo-viewer-counter"></span>
-                        <span class="photo-viewer-hint">Afaste dois dedos para ampliar</span>
                     </div>
 
                     <div class="store-location-panel">
@@ -2525,7 +2523,13 @@ function openPhotoViewer() {
 function closePhotoViewer(event) {
     if (event) event.stopPropagation();
     const viewer = document.getElementById('photoViewer');
-    if (viewer) viewer.hidden = true;
+    if (viewer) {
+        viewer.hidden = true;
+        viewer.classList.remove('photo-viewer-dragging', 'photo-viewer-dismissing');
+        viewer.style.transition = '';
+        viewer.style.transform = '';
+        viewer.style.opacity = '';
+    }
     document.body.style.overflow = document.body.dataset.previousPhotoOverflow || '';
     delete document.body.dataset.previousPhotoOverflow;
     resetPhotoViewerZoom();
@@ -2556,25 +2560,50 @@ function clampViewerPan() {
 
 function attachPhotoViewerGestures() {
     const stage = document.getElementById('photoViewerStage');
+    const viewer = document.getElementById('photoViewer');
     const viewerImage = document.getElementById('photoViewerImage');
-    if (!stage || !viewerImage) return;
+    if (!stage || !viewer || !viewerImage) return;
+
+    let gestureStart = null;
+    let gestureLast = null;
+    let gestureMode = '';
+
+    function resetViewerDrag(animated = true) {
+        viewer.classList.remove('photo-viewer-dragging', 'photo-viewer-dismissing');
+        viewer.style.transition = animated ? 'transform .18s ease, opacity .18s ease' : 'none';
+        viewer.style.transform = '';
+        viewer.style.opacity = '';
+        if (animated) window.setTimeout(() => { viewer.style.transition = ''; }, 200);
+        else viewer.style.transition = '';
+    }
 
     stage.addEventListener('touchstart', event => {
+        gestureMode = '';
+        gestureStart = null;
+        gestureLast = null;
         if (event.touches.length >= 2) {
             event.preventDefault();
             viewerPinchStartDistance = getTouchDistance(event.touches[0], event.touches[1]);
             viewerPinchStartScale = viewerZoom;
             viewerLastMidpoint = getTouchMidpoint(event.touches[0], event.touches[1]);
             viewerLastTouch = null;
-        } else if (event.touches.length === 1) {
-            viewerLastTouch = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+            return;
+        }
+        if (event.touches.length === 1) {
+            const touch = event.touches[0];
+            gestureStart = { x: touch.clientX, y: touch.clientY, time: Date.now(), zoom: viewerZoom };
+            gestureLast = { x: touch.clientX, y: touch.clientY };
+            viewerLastTouch = { x: touch.clientX, y: touch.clientY };
             viewerLastMidpoint = null;
+            resetViewerDrag(false);
         }
     }, { passive: false });
 
     stage.addEventListener('touchmove', event => {
         if (event.touches.length >= 2) {
             event.preventDefault();
+            gestureStart = null;
+            gestureMode = 'pinch';
             const distance = getTouchDistance(event.touches[0], event.touches[1]);
             const midpoint = getTouchMidpoint(event.touches[0], event.touches[1]);
             if (viewerPinchStartDistance > 0) {
@@ -2587,25 +2616,91 @@ function attachPhotoViewerGestures() {
             viewerLastMidpoint = midpoint;
             clampViewerPan();
             applyPhotoViewerTransform();
-        } else if (event.touches.length === 1 && viewerZoom > 1 && viewerLastTouch) {
+            return;
+        }
+
+        if (event.touches.length !== 1 || !gestureStart) return;
+        const touch = event.touches[0];
+        const dx = touch.clientX - gestureStart.x;
+        const dy = touch.clientY - gestureStart.y;
+        gestureLast = { x: touch.clientX, y: touch.clientY };
+
+        if (viewerZoom > 1 && viewerLastTouch) {
             event.preventDefault();
-            const touch = event.touches[0];
+            gestureMode = 'pan';
             viewerPanX += touch.clientX - viewerLastTouch.x;
             viewerPanY += touch.clientY - viewerLastTouch.y;
             viewerLastTouch = { x: touch.clientX, y: touch.clientY };
             clampViewerPan();
             applyPhotoViewerTransform();
+            return;
+        }
+
+        if (viewerZoom <= 1 && dy < -8 && Math.abs(dy) > Math.abs(dx) * 1.15 && gestureStart.y > window.innerHeight * 0.42) {
+            event.preventDefault();
+            gestureMode = 'close-up';
+            viewer.classList.add('photo-viewer-dragging');
+            viewer.style.transform = 'translate3d(0,' + Math.max(dy, -window.innerHeight * 0.42) + 'px,0)';
+            viewer.style.opacity = String(Math.max(0.45, 1 - Math.abs(dy) / (window.innerHeight * 1.4)));
+        } else if (viewerZoom <= 1 && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.15) {
+            gestureMode = 'photo-swipe';
         }
     }, { passive: false });
 
     stage.addEventListener('touchend', event => {
+        const hadSingleTouch = gestureStart && gestureMode !== 'pinch' && gestureMode !== 'pan';
+        let dx = 0, dy = 0;
+        if (hadSingleTouch && event.changedTouches && event.changedTouches.length) {
+            dx = event.changedTouches[0].clientX - gestureStart.x;
+            dy = event.changedTouches[0].clientY - gestureStart.y;
+        }
+
+        const shouldClose = hadSingleTouch && viewerZoom <= 1 &&
+            gestureStart.y > window.innerHeight * 0.42 && dy < -90 &&
+            Math.abs(dy) > Math.abs(dx) * 1.2;
+        const shouldChangePhoto = hadSingleTouch && viewerZoom <= 1 &&
+            Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.2 &&
+            storePhotos.length > 1;
+
+        if (shouldClose) {
+            viewer.classList.remove('photo-viewer-dragging');
+            // Force layout so the dismissal transition starts from the finger's current position.
+            void viewer.offsetHeight;
+            viewer.classList.add('photo-viewer-dismissing');
+            viewer.style.transform = 'translate3d(0,-100%,0)';
+            viewer.style.opacity = '0';
+            window.setTimeout(() => closePhotoViewer(), 205);
+        } else if (gestureMode === 'close-up') {
+            resetViewerDrag(true);
+        } else if (shouldChangePhoto) {
+            resetViewerDrag(false);
+            changeViewerPhoto(dx < 0 ? 1 : -1);
+        } else if (viewerZoom <= 1) {
+            resetViewerDrag(true);
+        }
+
         if (event.touches.length < 2) {
             viewerPinchStartDistance = 0;
             viewerPinchStartScale = viewerZoom;
             viewerLastMidpoint = null;
         }
-        if (event.touches.length === 0) viewerLastTouch = null;
+        if (event.touches.length === 0) {
+            viewerLastTouch = null;
+            gestureStart = null;
+            gestureLast = null;
+            gestureMode = '';
+        }
         if (viewerZoom <= 1) resetPhotoViewerZoom();
+    }, { passive: true });
+
+    stage.addEventListener('touchcancel', () => {
+        gestureStart = null;
+        gestureLast = null;
+        gestureMode = '';
+        resetViewerDrag(true);
+        viewerPinchStartDistance = 0;
+        viewerLastMidpoint = null;
+        viewerLastTouch = null;
     }, { passive: true });
 
     stage.addEventListener('wheel', event => {
@@ -2615,7 +2710,6 @@ function attachPhotoViewerGestures() {
         applyPhotoViewerTransform();
     }, { passive: false });
 }
-
 function attachPhotoSwipe() {
     const stage = document.getElementById('storePhotoStage');
     const photo = document.getElementById('storePhoto');
@@ -3103,6 +3197,11 @@ document.addEventListener('keydown', event => {
     if (event.key === 'ArrowRight') changeViewerPhoto(1);
 });
 
+// O visualizador pertence ao body para cobrir o ecrã inteiro, sem ficar preso ao cartão/perfil.
+const fullscreenPhotoViewer = document.getElementById('photoViewer');
+if (fullscreenPhotoViewer && fullscreenPhotoViewer.parentElement !== document.body) {
+    document.body.appendChild(fullscreenPhotoViewer);
+}
 attachPhotoSwipe();
 attachEdgeSwipeBack();
 loadConfiguredWorkbook();
