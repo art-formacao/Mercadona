@@ -1331,6 +1331,54 @@ html::before {
     #home .normas-home-btn .normas-icon{width:29px!important;height:29px!important;font-size:19px!important}
 }
 
+
+
+/* V38 — o cartão de escolha do interposto estende-se até junto da assinatura,
+   com a mesma margem inferior de 1 mm (4 CSS px) usada na lista de lojas. */
+:root{--menu-card-signature-gap:4px;}
+body.interposts-screen-locked #app>.screen{
+    display:flex!important;
+    flex:1 1 0px!important;
+    flex-direction:column!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:hidden!important;
+    padding-top:0!important;
+    padding-bottom:0!important;
+}
+body.interposts-screen-locked #interpostsPage.section{
+    display:flex!important;
+    flex:1 1 0px!important;
+    flex-direction:column!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:16px 0 var(--menu-card-signature-gap)!important;
+    overflow:hidden!important;
+    touch-action:none!important;
+}
+/* Mantém o resumo do total junto à base do cartão expandido. */
+body.interposts-screen-locked #interpostsPage .mercadona-total-card{
+    margin-top:auto!important;
+    margin-bottom:0!important;
+    flex:0 0 auto!important;
+}
+/* A lista de lojas mantém exatamente o mesmo intervalo de 1 mm para a assinatura. */
+body.stores-list-screen #app>.screen{
+    padding-top:0!important;
+    padding-bottom:0!important;
+}
+body.stores-list-screen #storesPage.section{
+    margin:16px 0 var(--menu-card-signature-gap)!important;
+}
+@media(max-width:700px){
+    body.interposts-screen-locked #interpostsPage.section{
+        padding-bottom:22px!important;
+    }
+}
+
 </style>
 
 </head>
@@ -1803,7 +1851,7 @@ function showInterposts() {
 
 function showPage(page) {
     setScreenThemeColor('#faf6ee');
-    document.getElementById('interpostsPage').style.display = page === 'interposts' ? 'block' : 'none';
+    document.getElementById('interpostsPage').style.display = page === 'interposts' ? 'flex' : 'none';
     document.getElementById('storesPage').style.display = page === 'stores' ? 'flex' : 'none';
     document.getElementById('profilePage').style.display = page === 'profile' ? 'block' : 'none';
     document.getElementById('normasPage').style.display = page === 'normas' ? 'block' : 'none';
