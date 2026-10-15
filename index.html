@@ -1379,6 +1379,52 @@ body.stores-list-screen #storesPage.section{
     }
 }
 
+
+
+/* V39 — remover apenas a linha inferior que parece separar o cartão da assinatura.
+   Mantém intactos altura, margens, cantos, conteúdo e restantes contornos dos cartões. */
+#interpostsPage.section,
+#storesPage.section,
+#profilePage.section,
+#normasPage.section {
+    border-bottom-color: transparent !important;
+}
+
+
+/* V40 — só o cartão inferior do total de lojas: logótipo acima e texto + número lado a lado. */
+#interpostsPage .mercadona-total-card{
+    min-height:160px!important;
+    height:160px!important;
+    padding:16px 20px!important;
+    gap:10px!important;
+}
+#interpostsPage .mercadona-total-logo{
+    display:block;width:min(100%,225px);height:auto;max-height:33px;object-fit:contain;flex:0 0 auto;
+}
+#interpostsPage .mercadona-total-summary{
+    display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-width:0;
+}
+#interpostsPage .mercadona-total-heading{
+    margin:0!important;color:var(--green);font-size:13px!important;line-height:1.2;font-weight:800;letter-spacing:-.015em;white-space:nowrap;
+}
+#interpostsPage .mercadona-total-number{
+    margin:0!important;color:var(--ink);font-size:clamp(34px,7vw,42px)!important;font-weight:850;line-height:1;letter-spacing:-.05em;font-variant-numeric:tabular-nums;flex:0 0 auto;
+}
+@media(max-width:700px){
+    #interpostsPage .mercadona-total-card{min-height:160px!important;height:160px!important;padding:16px 13px!important;gap:10px!important}
+    #interpostsPage .mercadona-total-logo{width:min(100%,215px);max-height:31px}
+    #interpostsPage .mercadona-total-summary{gap:10px}
+    #interpostsPage .mercadona-total-heading{font-size:13px!important}
+    #interpostsPage .mercadona-total-number{font-size:36px!important}
+}
+@media(max-width:380px){
+    #interpostsPage .mercadona-total-card{padding:14px 10px!important;gap:9px!important}
+    #interpostsPage .mercadona-total-logo{width:min(100%,200px);max-height:29px}
+    #interpostsPage .mercadona-total-summary{gap:8px}
+    #interpostsPage .mercadona-total-heading{font-size:12.5px!important}
+    #interpostsPage .mercadona-total-number{font-size:34px!important}
+}
+
 </style>
 
 </head>
@@ -1461,8 +1507,11 @@ body.stores-list-screen #storesPage.section{
                 </div>
 
                 <section class="mercadona-total-card" aria-label="Total de lojas Mercadona" aria-live="polite">
-                    <h2 class="mercadona-total-heading">Lojas MERCADONA</h2>
-                    <div id="mercadonaStoreCount" class="mercadona-total-number">—</div>
+                    <img class="mercadona-total-logo" src="./logo-mercadona-total.png" alt="Mercadona" width="314" height="45">
+                    <div class="mercadona-total-summary">
+                        <h2 class="mercadona-total-heading">Total de Lojas</h2>
+                        <div id="mercadonaStoreCount" class="mercadona-total-number">—</div>
+                    </div>
                 </section>
             </section>
 
