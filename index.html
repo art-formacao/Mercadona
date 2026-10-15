@@ -797,7 +797,7 @@ body.home-screen-locked #home{
 
 
 
-/* Segundo ecrã — escolha do interposto fixo, com botões clicáveis e cor uniforme até à barra de estado */
+/* Segundo ecrã — escolha do entreposto fixo, com botões clicáveis e cor uniforme até à barra de estado */
 html.interposts-screen-locked,
 body.interposts-screen-locked{
     height:100%!important;
@@ -1036,7 +1036,7 @@ body.stores-list-screen #storeListScroll {
     touch-action:pan-y!important;
 }
 
-/* No ecrã das lojas/interpostos, a zona da hora usa exatamente o fundo claro do cabeçalho. */
+/* No ecrã das lojas/entrepostos, a zona da hora usa exatamente o fundo claro do cabeçalho. */
 html.app-menu-layout,
 body.app-menu-layout,
 body.app-menu-layout>.page,
@@ -1333,7 +1333,7 @@ html::before {
 
 
 
-/* V38 — o cartão de escolha do interposto estende-se até junto da assinatura,
+/* V38 — o cartão de escolha do entreposto estende-se até junto da assinatura,
    com a mesma margem inferior de 1 mm (4 CSS px) usada na lista de lojas. */
 :root{--menu-card-signature-gap:4px;}
 body.interposts-screen-locked #app>.screen{
@@ -1482,7 +1482,7 @@ body.stores-list-screen #storesPage.section{
             </section>
 
             <section id="interpostsPage" class="section">
-                <h1>Escolha o interposto</h1>
+                <h1>Escolha o entreposto</h1>
                 <p class="subtitle">Selecione o local onde vai realizar o serviço.</p>
 
                 <div class="interpost-grid">
@@ -1853,7 +1853,7 @@ const NORMA_TOPICS = {
     },
     contactos: {
         title: "Contactos operacionais",
-        intro: "Contacte a equipa responsável de acordo com o horário e o interposto.",
+        intro: "Contacte a equipa responsável de acordo com o horário e o entreposto.",
         photos: [
             ["truck", "Gestores e coordenação"],
             ["temperature", "UPC — apoio operacional"],
@@ -2449,7 +2449,7 @@ function navigateInterpost(interpostName, appType) {
     const key = normalizeKey(interpostName);
     const destination = INTERPOST_DESTINATIONS[key];
     if (!destination) {
-        console.error("Interposto sem coordenadas configuradas:", interpostName);
+        console.error("Entreposto sem coordenadas configuradas:", entrepostoName);
         return;
     }
 
@@ -3521,7 +3521,7 @@ function attachEdgeSwipeBack() {
         const storesCopy = pageCopy.querySelector('#storesPage');
         const profileCopy = pageCopy.querySelector('#profilePage');
 
-        // O gesto a partir do menu de interpostos regressa ao ecrã inicial.
+        // O gesto a partir do menu de entrepostos regressa ao ecrã inicial.
         if (currentPage === 'interposts' || currentPage === 'normas') {
             if (homeCopy) homeCopy.style.display = 'flex';
             if (appCopy) appCopy.style.display = 'none';
